@@ -128,6 +128,10 @@ POST   /api/signup                 # Registar um novo utilizador
 POST   /api/login                  # Autenticar um utilizador
 ```
 
+## 📚 Documentação
+
+Para mais detalhes sobre os endpoints disponíveis, consulte a [Documentação da API](./api.md).
+
 ## 🧪 Testes
 
 O projeto utiliza Codeception para os testes. Para executar os testes, configure as bases de dados de teste nos ficheiros de configuração (`common/config/test-local.php`, etc.) e execute os testes a partir da raiz do projeto `maislusitania`:
