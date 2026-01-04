@@ -196,24 +196,9 @@ class LocalCulturalController extends Controller
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
-        $currentImage = $model->imagem_principal;
-        $horario = $model->horario;
 
         if ($model->delete()) {
             Yii::$app->session->setFlash('success', 'Local Cultural deletado com sucesso!');
-
-            // Apagar a imagem associada
-            if (!empty($currentImage)) {
-                $imagePath = Yii::getAlias('@uploadPath') . '/' . $currentImage;
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-
-            // Apagar o horário associado
-            if ($horario) {
-                $horario->delete();
-            }
         } else {
             Yii::$app->session->setFlash('error', 'Erro ao deletar o Local Cultural.');
         }

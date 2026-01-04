@@ -84,4 +84,25 @@ class TipoLocal extends \yii\db\ActiveRecord
         */
         return Yii::$app->request->hostInfo . '/projetopsi/maislusitania/frontend/web/uploads/' . $this->icone; 
     }
+
+    public function beforeDelete()
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Apagar o ícone associado ao TipoLocal
+        if (!empty($this->icone)) {
+            $imagePath = Yii::getAlias('@uploadPath') . '/' . $this->icone;
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+        // Apagar todos os LocaisCulturais associados a este TipoLocal
+        foreach ($this->localCulturals as $localCultural) {
+            $localCultural->delete();
+        }
+
+        return true;
+    }
 }

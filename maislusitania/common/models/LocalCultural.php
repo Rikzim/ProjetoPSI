@@ -263,4 +263,34 @@ class LocalCultural extends \yii\db\ActiveRecord
         */
         return Yii::$app->request->hostInfo . '/projetopsi/maislusitania/frontend/web/uploads/' . $this->imagem_principal; 
     }
+
+    public function beforeDelete()
+    {
+        // Remover imagem principal se existir
+        $currentImage = $this->imagem_principal;
+        if (!empty($currentImage)) {
+            $imagePath = Yii::getAlias('@uploadPath') . '/' . $currentImage;
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        // Remover tipos de bilhete associados
+        foreach ($this->tipoBilhetes as $tipoBilhete) {
+            $tipoBilhete->delete();
+        }
+
+        return parent::beforeDelete();
+    }
+
+    public function afterDelete()
+    {
+        // Remover horário associado
+        $horario = $this->horario;
+        if ($horario) {
+            $horario->delete();
+        }
+
+        parent::afterDelete();
+    }
 }

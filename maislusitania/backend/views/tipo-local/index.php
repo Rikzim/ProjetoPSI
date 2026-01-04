@@ -147,7 +147,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 'title' => 'Eliminar',
                                                 'class' => 'btn btn-sm btn-danger',
                                                 'data' => [
-                                                    'confirm' => 'Tem a certeza que deseja eliminar este tipo de local?',
+                                                    'confirm' => 'Tem a certeza que deseja eliminar este tipo de local?. OBSERVAÇÃO: Todos os locais culturais associados a este tipo de local serão também eliminados.',
                                                     'method' => 'post',
                                                 ],
                                             ]
