@@ -1,8 +1,8 @@
 # Documentação da API - MaisLusitânia
 
-API RESTful para gestão de locais culturais (Museus e Monumentos), notícias, eventos, reservas e avaliações em Portugal.
+API RESTful para gestão de locais culturais, notícias, eventos, reservas e avaliações em Portugal.
 
-**Base URL:** `http://172.22.21.218/projetopsi/maislusitania/backend/web/api`
+**Base URL:** `http://localhost/projetopsi/maislusitania/backend/web/api`
 
 ---
 
@@ -22,76 +22,48 @@ API RESTful para gestão de locais culturais (Museus e Monumentos), notícias, e
 
 ## Autenticação
 
-A API utiliza **tokens de acesso** para autenticar utilizadores. O token deve ser enviado como parâmetro de query `access-token` ou no header `Authorization: Bearer {token}`.
+A API utiliza **tokens de acesso** para autenticar utilizadores. O token deve ser enviado como parâmetro de query `access-token`.
 
 ### POST `/login-form`
 
 Autentica um utilizador e retorna um token de acesso.
 
-**Parâmetros (Body JSON):**
+**Parâmetros (Body `x-www-form-urlencoded`):**
 
 | Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
+|---|---|---|---|
 | `username` | string | Sim | Nome de utilizador |
-| `password` | string | Sim | Password (PlainText) |
+| `password` | string | Sim | Password |
 
-**Exemplo de Request:**
-
+**Response (200 OK):**
 ```json
-POST /login-form
-Content-Type: application/json
 {
   "username": "user",
-  "password": "12345678"
-}
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-{
-  "username": "admin",
   "user_id": 8,
   "auth_key": "MhmeNGvy7wibfDGcik_kfq2RW8Tjx5bN"
 }
 ```
 
----
-
 ### POST `/signup-form`
 
-Regista um novo utilizador na plataforma.
+Regista um novo utilizador.
 
-**Parâmetros (Body JSON):**
+**Parâmetros (Body `x-www-form-urlencoded`):**
 
 | Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
+|---|---|---|---|
 | `username` | string | Sim | Nome de utilizador único |
 | `email` | string | Sim | Email válido |
-| `password` | string | Sim | Password (PlainText) |
-| `primeiro_nome` | string | Sim | Password (PlainText) |
-| `ultimo_nome` | string | Sim | Password (PlainText) |
+| `password` | string | Sim | Password |
+| `primeiro_nome` | string | Sim | Primeiro nome |
+| `ultimo_nome` | string | Sim | Último nome |
 
-**Exemplo de Request:**
-
-```json
-POST /register
-Content-Type: application/json
-{
-  "username": "mari123",
-  "email": "maria@gmail.com",
-  "password": "12345678",
-  "primeiro_nome": "ana",
-  "ultimo_nome": "maria"
-}
-```
-
-**Exemplo de Response (201 Created):**
-
+**Response (201 Created):**
 ```json
 {
-  "success": true,
-  "message": "Utilizador criado com sucesso!"
+  "status": "success",
+  "message": "Utilizador criado com sucesso",
+  "user_id": 9
 }
 ```
 
@@ -101,740 +73,454 @@ Content-Type: application/json
 
 ### GET `/local-culturals`
 
-Lista todos os locais culturais ativos.
+Lista todos os locais culturais ativos. Se autenticado, inclui `favorito` (boolean) e `favorito_id`.
 
-**Parâmetros de Query (Opcionais):**
-
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| `tipo` | string | Filtrar por tipo de local (ex: "Museu", "Monumento") |
-| `distrito` | string | Filtrar por distrito (ex: "Lisboa", "Porto") |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 [
   {
-    "id":	1,
-    "nome":	"Museu Nacional de Arte Antiga",
+    "id": 1,
+    "nome": "Museu Nacional de Arte Antiga",
     "morada": "Rua das Janelas Verdes, 1249-017 Lisboa",
-    "distrito":	"Lisboa",
-    "descricao":	"O mais importante museu de arte antiga em Portugal, com coleções de pintura, escultura, artes decorativas e desenho.",
-    "imagem":	"http://localhost/projetopsi/maislusitania/frontend/web/uploads/local_693176e91dd34.jpg",
-    "avaliacao_media":	4
+    "distrito": "Lisboa",
+    "descricao": "O mais importante museu de arte antiga em Portugal...",
+    "imagem": "http://.../imagem.jpg",
+    "avaliacao_media": 4,
+    "favorito": true,
+    "favorito_id": 12
   }
 ]
 ```
-
----
-
-### GET `/local-culturals/distrito`
-
-Lista todos os locais culturais ativos.
-
-**Parâmetros de Query (Opcionais):**
-
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| `tipo` | string | Filtrar por tipo de local (ex: "Museu", "Monumento") |
-| `distrito` | string | Filtrar por distrito (ex: "Lisboa", "Porto") |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-[
-  {
-    "id":	1,
-    "nome":	"Museu Nacional de Arte Antiga",
-    "morada": "Rua das Janelas Verdes, 1249-017 Lisboa",
-    "distrito":	"Lisboa",
-    "descricao":	"O mais importante museu de arte antiga em Portugal, com coleções de pintura, escultura, artes decorativas e desenho.",
-    "imagem":	"http://localhost/projetopsi/maislusitania/frontend/web/uploads/local_693176e91dd34.jpg",
-    "avaliacao_media":	4
-  }
-]
-```
-
----
 
 ### GET `/local-culturals/{id}`
 
-Obtém detalhes completos de um local cultural específico, incluindo notícias, eventos, avaliações, bilhetes e horários.
+Obtém detalhes de um local cultural. Se autenticado, inclui `favorito` e `favorito_id`.
 
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 {
-  "id": 61,
-  "nome": "Museu Nacional de Arte Antiga",
-  "tipo": "Museu",
-  "distrito": "Lisboa",
-  "imagem": "https://picsum.photos/500/300?random=61",
-  "morada": "R. das Janelas Verdes, Lisboa",
-  "descricao": "O Museu Nacional de Arte Antiga é o mais importante museu de arte em Portugal...",
-  "horario_funcionamento": "Terça a Domingo: 10h00-18h00. Encerrado às segundas-feiras.",
-  "contacto_telefone": "+351 213 912 800",
-  "contacto_email": "mnarteantiga@mnaa.dgpc.pt",
-  "website": "http://www.museudearteantiga.pt",
-  "ativo": true,
-  "latitude": 38.7069,
-  "longitude": -9.1604,
-  "avaliacoes": [
-    {
-      "id": 1,
-      "utilizador": "João Silva",
-      "classificacao": 4.8,
-      "comentario": "Espaço incrível com obras imperdíveis...",
-      "data_avaliacao": "2024-02-12",
-      "ativo": true
-    }
-  ],
-  "noticias": [
-    {
-      "id": 1,
-      "titulo": "Nova exposição de arte flamenga chega a Lisboa",
-      "descricao": "O Museu Nacional de Arte Antiga inaugura uma nova mostra...",
-      "data_inicio": "2024-10-10",
-      "data_fim": "2024-11-11",
-      "imagem": "https://picsum.photos/500/300?random=101"
-    }
-  ],
-  "eventos": [
-    {
-      "id": 1,
-      "titulo": "Concerto de Música Barroca",
-      "descricao": "Apresentação especial com a Orquestra Clássica de Lisboa...",
-      "data_inicio": "2024-12-05T18:00:00",
-      "data_fim": "2024-12-05T20:00:00",
-      "imagem": "https://picsum.photos/500/300?random=201"
-    }
-  ],
-  "tipos_bilhete": [
-    {
-      "id": 1,
-      "nome": "Bilhete Adulto",
-      "preco": "10€",
-      "ativo": true
-    }
-  ],
-  "horarios": [
-    {
-      "id": 1,
-      "segunda": "10:00-18:00",
-      "terca": "10:00-18:00",
-      "quarta": "10:00-18:00",
-      "quinta": "10:00-18:00",
-      "sexta": "10:00-18:00",
-      "sabado": "10:00-18:00",
-      "domingo": "10:00-18:00"
-    }
-  ]
+    "id": 61,
+    "nome": "Museu Nacional de Arte Antiga",
+    "tipo": "Museu",
+    "distrito": "Lisboa",
+    "imagem": "http://.../imagem.jpg",
+    "morada": "R. das Janelas Verdes, Lisboa",
+    "descricao": "O Museu Nacional de Arte Antiga é o mais importante museu de arte em Portugal...",
+    "contacto_telefone": "+351 213 912 800",
+    "contacto_email": "mnarteantiga@mnaa.dgpc.pt",
+    "website": "http://www.museudearteantiga.pt",
+    "ativo": true,
+    "latitude": 38.7069,
+    "longitude": -9.1604,
+    "horario": {
+        "segunda": "10:00-18:00",
+        "terca": "10:00-18:00",
+        "quarta": "10:00-18:00",
+        "quinta": "10:00-18:00",
+        "sexta": "10:00-18:00",
+        "sabado": "10:00-18:00",
+        "domingo": "10:00-18:00"
+    },
+    "avaliacoes": [
+        {
+            "id": 1,
+            "utilizador": "João Silva",
+            "classificacao": 4.8,
+            "comentario": "Espaço incrível com obras imperdíveis...",
+            "data_avaliacao": "2024-02-12",
+            "ativo": true
+        }
+    ],
+    "noticias": [
+        {
+            "id": 1,
+            "titulo": "Nova exposição de arte flamenga",
+            "descricao": "Nova mostra dedicada à pintura flamenga",
+            "data_publicacao": "2024-10-10 09:00",
+            "imagem": "http://.../imagem.jpg"
+        }
+    ],
+    "eventos": [
+        {
+            "id": 1,
+            "titulo": "Concerto de Música Barroca",
+            "descricao": "Apresentação especial com a Orquestra Clássica de Lisboa...",
+            "data_inicio": "2024-12-05T18:00:00",
+            "data_fim": "2024-12-05T20:00:00",
+            "imagem": "http://.../imagem.jpg"
+        }
+    ],
+    "tipos-bilhete": [
+        {
+            "id": 1,
+            "nome": "Bilhete Adulto",
+            "descricao": "Bilhete para maiores de 12 anos.",
+            "preco": "10.00€",
+            "ativo": true
+        }
+    ],
+    "favorito": false,
+    "favorito_id": null
 }
 ```
 
+### GET `/local-culturals/distrito/{nome}`
+
+Lista locais culturais de um distrito.
+
+### GET `/local-culturals/tipo-local/{nome}`
+
+Lista locais culturais por tipo (ex: "Museu").
+
+### GET `/local-culturals/search/{nome}`
+
+Procura locais culturais pelo nome.
+
 ---
 
-## 📅 Eventos
+## Eventos
 
-### GET `/locais-culturais/{id}/eventos`
+### GET `/eventos`
 
-Lista todos os eventos relacionados a um local cultural específico.
+Lista todos os eventos ativos.
 
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61/eventos
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 [
   {
     "id": 1,
     "titulo": "Concerto de Música Barroca",
-    "data_inicio": "2024-12-05T18:00:00",
-    "imagem": "https://picsum.photos/500/300?random=201"
+    "nome_local": "Museu Nacional de Arte Antiga",
+    "descricao": "Apresentação especial com a Orquestra Clássica de Lisboa...",
+    "imagem": "http://.../imagem.jpg",
+    "data_inicio": "05/12/2024 18:00",
+    "data_fim": "05/12/2024 20:00"
   }
 ]
 ```
 
----
+### GET `/eventos/{id}`
 
-### GET `/locais-culturais/{id}/eventos/{evento_id}`
+Obtém detalhes de um evento.
 
-Obtém detalhes completos de um evento específico.
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-| `evento_id` | integer | Sim | ID do evento |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61/eventos/1
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 {
-  "id": 1,
-  "titulo": "Concerto de Música Barroca",
-  "descricao": "Apresentação especial com a Orquestra Clássica de Lisboa no auditório do museu.",
-  "data_inicio": "2024-12-05T18:00:00",
-  "data_fim": "2024-12-05T20:00:00",
-  "imagem": "https://picsum.photos/500/300?random=201"
-}
-```
-
----
-
-### GET `/eventos`
-
-Lista todos os eventos ativos da plataforma.
-
-**Exemplo de Request:**
-
-```http
-GET /eventos
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-[
-  {
     "id": 1,
     "titulo": "Concerto de Música Barroca",
     "descricao": "Apresentação especial com a Orquestra Clássica de Lisboa...",
     "data_inicio": "2024-12-05T18:00:00",
     "data_fim": "2024-12-05T20:00:00",
-    "imagem": "https://picsum.photos/500/300?random=201"
-  }
-]
-```
-
----
-
-## 📰 Notícias
-
-### GET `/locais-culturais/{id}/noticias`
-
-Lista todas as notícias relacionadas a um local cultural.
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61/noticias
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-[
-  {
-    "id": 1,
-    "titulo": "Nova exposição de arte flamenga chega a Lisboa",
-    "resumo": "Nova mostra dedicada à pintura flamenga",
-    "imagem": "https://picsum.photos/500/300?random=101",
-    "data_publicacao": "2024-10-10T09:00:00",
-    "ativo": true,
-    "local_id": 61
-  }
-]
-```
-
----
-
-### GET `/locais-culturais/{id}/noticias/{noticia_id}`
-
-Obtém detalhes completos de uma notícia específica.
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-| `noticia_id` | integer | Sim | ID da notícia |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61/noticias/1
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-{
-  "id": 1,
-  "titulo": "Nova exposição de arte flamenga chega a Lisboa",
-  "conteudo": "O Museu Nacional de Arte Antiga inaugura...",
-  "resumo": "Nova mostra dedicada à pintura flamenga",
-  "imagem": "https://picsum.photos/500/300?random=101",
-  "data_publicacao": "2024-10-10T09:00:00",
-  "ativo": true,
-  "local_id": 61,
-  "destaque": 1
+    "imagem": "http://.../imagem.jpg",
+    "local": {
+        "id": 61,
+        "nome": "Museu Nacional de Arte Antiga",
+        "morada": "R. das Janelas Verdes, Lisboa",
+        "descricao": "O Museu Nacional de Arte Antiga é o mais importante museu de arte em Portugal...",
+        "contacto_telefone": "+351 213 912 800",
+        "contacto_email": "mnarteantiga@mnaa.dgpc.pt",
+        "website": "http://www.museudearteantiga.pt",
+        "ativo": true,
+        "latitude": 38.7069,
+        "longitude": -9.1604,
+        "horario": {
+            "segunda": "10:00-18:00",
+            "terca": "10:00-18:00",
+            "quarta": "10:00-18:00",
+            "quinta": "10:00-18:00",
+            "sexta": "10:00-18:00",
+            "sabado": "10:00-18:00",
+            "domingo": "10:00-18:00"
+        }
+    }
 }
 ```
 
+### GET `/eventos/tipo-local/{nome}`
+
+Lista eventos por tipo de local cultural.
+
+### GET `/eventos/search/{nome}`
+
+Procura eventos pelo título.
+
 ---
+
+## Notícias
 
 ### GET `/noticias`
 
-Lista todas as notícias ativas da plataforma.
+Lista todas as notícias ativas.
 
-**Exemplo de Request:**
-
-```http
-GET /noticias
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 [
   {
     "id": 1,
-    "titulo": "Nova exposição de arte flamenga chega a Lisboa",
-    "resumo": "Nova mostra dedicada à pintura flamenga",
-    "imagem": "https://picsum.photos/500/300?random=101",
-    "data_publicacao": "2024-10-10T09:00:00",
-    "ativo": true,
-    "local_id": 61
-  }
-]
-```
-
----
-
-## 👤 Perfil do Utilizador
-
-### GET `/profile`
-
-Obtém informações pessoais do utilizador autenticado.
-
-**Autenticação:** Requerida
-
-**Parâmetros de Query:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `access-token` | string | Sim | Token de autenticação |
-
-**Exemplo de Request:**
-
-```http
-GET /profile?access-token=123456
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-{
-  "username": "maria102",
-  "email": "maria@gmail.com",
-  "primeiro_nome": "Maria",
-  "ultimo_nome": "Mendes",
-  "imagem_perfil": "/upload/uhf39239vw.png"
-}
-```
-
----
-
-## ⭐ Favoritos
-
-### GET `/profile/favoritos`
-
-Lista todos os locais culturais marcados como favoritos pelo utilizador.
-
-**Autenticação:** Requerida
-
-**Exemplo de Request:**
-
-```http
-GET /profile/favoritos?access-token=123456
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-[
-  {
-    "local_id": 1,
-    "local_nome": "Museu Alegre",
-    "local_tipo": "Museu",
-    "local_imagem": "/upload/2049329dasdf.png",
-    "local_distrito": "Viseu",
-    "local_morada": "Rua das Flores 123"
-  }
-]
-```
-
----
-
-### POST `/profile/favoritos`
-
-Adiciona um local cultural aos favoritos do utilizador.
-
-**Autenticação:** Requerida
-
-**Parâmetros (Body JSON):**
-
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `local_id` | integer | Sim | ID do local a adicionar |
-
-**Exemplo de Request:**
-
-```json
-POST /profile/favoritos?access-token=123456789876543
-Content-Type: application/json
-
-{
-  "local_id": 2
-}
-```
-
-**Exemplo de Response (201 Created):**
-
-```json
-{
-  "success": true,
-  "message": "Local adicionado aos favoritos com sucesso!",
-  "data": {
-    "id": 1,
-    "utilizador_id": 15,
-    "local_id": 2,
+    "nome": "Nova exposição de arte flamenga chega a Lisboa",
     "local_nome": "Museu Nacional de Arte Antiga",
-    "data_adicao": "2024-11-06T15:30:00"
+    "resumo": "Nova mostra dedicada à pintura flamenga",
+    "imagem": "http://.../imagem.jpg",
+    "data_publicacao": "2024-10-10 09:00:00"
   }
-}
+]
 ```
 
----
+### GET `/noticias/{id}`
 
-### DELETE `/profile/favoritos/{id}`
+Obtém detalhes de uma notícia.
 
-Remove um local dos favoritos do utilizador.
-
-**Autenticação:** Requerida
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do favorito a remover |
-
-**Exemplo de Request:**
-
-```http
-DELETE /profile/favoritos/1?access-token=123456789876543
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 {
-  "success": true,
-  "message": "Local removido dos favoritos com sucesso!"
+    "id": 1,
+    "titulo": "Nova exposição de arte flamenga",
+    "descricao": "Nova mostra dedicada à pintura flamenga",
+    "data_publicacao": "2024-10-10 09:00:00",
+    "imagem": "http://.../imagem.jpg",
+    "local": {
+        "id": 61,
+        "nome": "Museu Nacional de Arte Antiga",
+        "morada": "R. das Janelas Verdes, Lisboa",
+        "descricao": "O Museu Nacional de Arte Antiga é o mais importante museu de arte em Portugal...",
+        "contacto_telefone": "+351 213 912 800",
+        "contacto_email": "mnarteantiga@mnaa.dgpc.pt",
+        "website": "http://www.museudearteantiga.pt",
+        "ativo": true,
+        "latitude": 38.7069,
+        "longitude": -9.1604,
+        "horario": {
+            "segunda": "10:00-18:00",
+            "terca": "10:00-18:00",
+            "quarta": "10:00-18:00",
+            "quinta": "10:00-18:00",
+            "sexta": "10:00-18:00",
+            "sabado": "10:00-18:00",
+            "domingo": "10:00-18:00"
+        }
+    }
 }
 ```
 
+### GET `/noticias/tipo-local/{nome}`
+
+Lista notícias por tipo de local cultural.
+
+### GET `/noticias/search/{nome}`
+
+Procura notícias pelo título.
+
 ---
 
-## 🎫 Reservas e Bilhetes
+## Perfil do Utilizador
 
-### GET `/profile/bilhetes`
+### GET `/user-profile/me`
 
-Lista todas as reservas e bilhetes do utilizador autenticado.
+Obtém o perfil do utilizador autenticado.
 
-**Autenticação:** Requerida
-
-**Exemplo de Request:**
-
-```http
-GET /profile/bilhetes?access-token=12345678
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "primeiro_nome": "John",
+    "ultimo_nome": "Doe",
+    "imagem_perfil": "http://.../imagem.jpg",
+    "user_id": 1,
+    "username": "johndoe",
+    "email": "johndoe@example.com",
+    "data_adesao": "2024-01-01"
+  }
+]
 ```
 
-**Exemplo de Response (200 OK):**
+### POST `/user-profile/update-profile`
 
+Atualiza o perfil do utilizador.
+
+**Parâmetros (Body `JSON`):**
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| `primeiro_nome`| string| Não |
+| `ultimo_nome` | string| Não |
+| `username` | string| Não |
+
+### POST `/user-profile/change-password`
+
+Altera a password do utilizador.
+
+**Parâmetros (Body `JSON`):**
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| `current_password`| string| Sim |
+| `new_password` | string| Sim |
+
+### DELETE `/user-profile/delete-account`
+
+Elimina (soft delete) a conta do utilizador.
+
+---
+
+## Favoritos
+
+### GET `/favoritos`
+
+Lista os locais culturais favoritos do utilizador.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "utilizador_id": 1,
+    "local_id": 61,
+    "local_imagem": "http://.../imagem.jpg",
+    "local_nome": "Museu Nacional de Arte Antiga",
+    "local_distrito": "Lisboa",
+    "local_rating": 4.5,
+    "data_adicao": "2026-01-03 10:00:00",
+    "isFavorite": true
+  }
+]
+```
+
+### POST `/favoritos/add/{localid}`
+
+Adiciona um local aos favoritos.
+
+### DELETE `/favoritos/remove/{localid}`
+
+Remove um local dos favoritos.
+
+### POST `/favoritos/toggle/{localid}`
+
+Adiciona ou remove um local dos favoritos.
+
+---
+
+## Reservas e Bilhetes
+
+### GET `/reservas`
+
+Lista as reservas do utilizador.
+
+**Response (200 OK):**
 ```json
 [
   {
     "id": 1,
     "local_id": 61,
     "local_nome": "Museu Nacional de Arte Antiga",
-    "data_visita": "2024-11-15",
-    "preco_total": 25.00,
-    "estado": "confirmada"
+    "data_visita": "2026-02-15",
+    "preco_total": "25.00",
+    "estado": "confirmada",
+    "data_criacao": "2026-01-04 12:30:00",
+    "imagem_local": "http://.../imagem.jpg"
   }
 ]
 ```
 
----
+### GET `/reservas/{id}`
 
-### GET `/profile/bilhetes/{id}`
+Obtém os detalhes e bilhetes de uma reserva. Cada bilhete individual é retornado como um objeto.
 
-Obtém detalhes completos de uma reserva/bilhete específico.
-
-**Autenticação:** Requerida
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do bilhete |
-
-**Exemplo de Request:**
-
-```http
-GET /profile/bilhetes/1?access-token=12345678
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-{
-  "id": 1,
-  "utilizador_nome": "Maria Santos",
-  "local_id": 61,
-  "local_nome": "Museu Nacional de Arte Antiga",
-  "data_visita": "2024-11-15",
-  "preco_total": 25.00,
-  "estado": "confirmada",
-  "data_criacao": "2024-11-01T14:30:00",
-  "bilhetes": [
-    {
-      "tipo": "Adulto",
-      "quantidade": 2,
-      "preco_unitario": 10.00,
-      "subtotal": 20.00
-    },
-    {
-      "tipo": "Criança",
-      "quantidade": 1,
-      "preco_unitario": 5.00,
-      "subtotal": 5.00
-    }
-  ]
-}
-```
-
----
-
-## ⭐ Avaliações
-
-### GET `/locais-culturais/{id}/avaliacoes`
-
-Lista todas as avaliações de um local cultural.
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-
-**Exemplo de Request:**
-
-```http
-GET /locais-culturais/61/avaliacoes
-```
-
-**Exemplo de Response (200 OK):**
-
+**Response (200 OK):**
 ```json
 [
-  {
-    "id": 1,
-    "utilizador": "João Silva",
-    "classificacao": 4.8,
-    "comentario": "Espaço incrível com obras imperdíveis como o Painel de São Vicente. Atendimento simpático e ótima organização.",
-    "data_avaliacao": "2024-02-12",
-    "ativo": true
-  }
+    {
+        "numero": 1,
+        "codigo": "000001-001",
+        "reserva_id": 1,
+        "local_id": 61,
+        "local_nome": "Museu Nacional de Arte Antiga",
+        "data_visita": "2026-02-15",
+        "tipo_bilhete_id": 1,
+        "tipo_bilhete_nome": "Adulto",
+        "tipo_bilhete_descricao": "Bilhete normal",
+        "preco": "10.00",
+        "estado": "confirmada"
+    },
+    {
+        "numero": 2,
+        "codigo": "000001-002",
+        "reserva_id": 1,
+        "local_id": 61,
+        "local_nome": "Museu Nacional de Arte Antiga",
+        "data_visita": "2026-02-15",
+        "tipo_bilhete_id": 2,
+        "tipo_bilhete_nome": "Criança",
+        "tipo_bilhete_descricao": "Bilhete para menores de 12 anos",
+        "preco": "5.00",
+        "estado": "confirmada"
+    }
 ]
 ```
 
----
+### GET `/reservas/search/{nome}`
 
-### POST `/locais-culturais/{id}/avaliacoes`
+Procura reservas pelo nome do local cultural.
 
-Cria uma nova avaliação para um local cultural.
+### POST `/reservas`
 
-**Autenticação:** Requerida
+Cria uma nova reserva.
 
-**Parâmetros (Body JSON):**
+**Parâmetros (Body `x-www-form-urlencoded`):**
 
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `local_id` | integer | Sim | ID do local cultural |
-| `classificacao` | float | Sim | Classificação de 0 a 5 |
-| `comentario` | string | Não | Comentário da avaliação |
-
-**Exemplo de Request:**
-
-```json
-POST /locais-culturais/61/avaliacoes?access-token=123456
-Content-Type: application/json
-
-{
-  "local_id": 61,
-  "classificacao": 4.3,
-  "comentario": "Muito bom!"
-}
-```
-
-**Exemplo de Response (201 Created):**
-
-```json
-{
-  "success": true,
-  "message": "Avaliação criada com sucesso!",
-  "id": 1,
-  "user_id": 2,
-  "local_id": 61,
-  "classificacao": 4.3,
-  "comentario": "Muito bom!",
-  "data_avaliacao": "2024-10-10",
-  "ativo": true
-}
-```
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `local_id`| integer| ID do local cultural |
+| `data_visita`| date | Data da visita (YYYY-MM-DD) |
+| `bilhetes` | array | Array de bilhetes. Ex: `bilhetes[TIPO_ID]=QUANTIDADE` |
 
 ---
 
-### PUT `/locais-culturais/{id}/avaliacoes/{avaliacao_id}`
+## Avaliações
 
-Atualiza uma avaliação existente (apenas o autor pode atualizar).
+### POST `/avaliacoes/add/{localid}`
 
-**Autenticação:** Requerida
+Adiciona uma avaliação a um local cultural.
 
-**Parâmetros de Path:**
+**Parâmetros (Body `x-www-form-urlencoded`):**
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-| `avaliacao_id` | integer | Sim | ID da avaliação |
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| `classificacao`| float | Sim (0-5) |
+| `comentario` | string| Não |
 
-**Parâmetros (Body JSON):**
-
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `classificacao` | float | Não | Nova classificação |
-| `comentario` | string | Não | Novo comentário |
-
-**Exemplo de Request:**
-
+**Response (201 Created):**
 ```json
-PUT /locais-culturais/61/avaliacoes/2?access-token=123456
-Content-Type: application/json
-
 {
-  "classificacao": 4.5,
-  "comentario": "Muito bom, vale a pena visitar!"
+    "id": 10,
+    "local_id": 61,
+    "utilizador_id": 8,
+    "classificacao": "4.5",
+    "comentario": "Excelente museu!",
+    "data_avaliacao": "2026-01-04 15:00:00",
+    "ativo": 1
 }
 ```
 
-**Exemplo de Response (200 OK):**
+### DELETE `/avaliacoes/remove/{id}`
 
-```json
-{
-  "success": true,
-  "message": "Avaliação alterada com sucesso",
-  "id": 2,
-  "classificacao": 4.5,
-  "comentario": "Muito bom, vale a pena visitar!",
-  "data_avaliacao": "2024-10-10"
-}
-```
+Remove uma avaliação.
 
 ---
 
-### DELETE `/locais-culturais/{id}/avaliacoes/{avaliacao_id}`
-
-Remove uma avaliação (apenas o autor pode remover).
-
-**Autenticação:** Requerida
-
-**Parâmetros de Path:**
-
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | integer | Sim | ID do local cultural |
-| `avaliacao_id` | integer | Sim | ID da avaliação |
-
-**Exemplo de Request:**
-
-```http
-DELETE /locais-culturais/61/avaliacoes/2?access-token=123456
-```
-
-**Exemplo de Response (200 OK):**
-
-```json
-{
-  "success": true,
-  "message": "Avaliação removida com sucesso!"
-}
-```
-
----
-
-## 📊 Códigos de Status HTTP
-
+## Códigos de Status HTTP
 | Código | Descrição |
-|--------|-----------|
-| `200` | **OK** - Pedido bem-sucedido |
-| `201` | **Created** - Recurso criado com sucesso |
-| `400` | **Bad Request** - Parâmetros inválidos |
-| `401` | **Unauthorized** - Autenticação necessária ou token inválido |
-| `403` | **Forbidden** - Sem permissão para aceder ao recurso |
-| `404` | **Not Found** - Recurso não encontrado |
-| `422` | **Unprocessable Entity** - Erro de validação |
-| `500` | **Internal Server Error** - Erro no servidor |
+|---|---|
+| `200` | **OK** |
+| `201` | **Created** |
+| `400` | **Bad Request** |
+| `401` | **Unauthorized** |
+| `403` | **Forbidden** |
+| `404` | **Not Found** |
+| `409` | **Conflict** |
+| `500` | **Internal Server Error** |
 
 ---
 
-**Versão:** 1.0.0  
-**Última Atualização:** Outubro 2025
+**Versão:** 1.1.0  
+**Última Atualização:** Janeiro 2026
