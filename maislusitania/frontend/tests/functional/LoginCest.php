@@ -42,7 +42,7 @@ class LoginCest
 
     public function checkValidLogin(FunctionalTester $I)
     {
-        $I->submitForm('#login-form', $this->formParams('mariofernandes', '12345678'));
+        $I->submitForm('#login-form', $this->formParams('joaomatias', '12345678'));
         $I->dontSeeElement('#login-form');
         $I->see('Descubra o Património Histórico de Portugal');
         $I->seeElement('.user-avatar');
