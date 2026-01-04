@@ -2,6 +2,11 @@ suite_namespace: frontend\tests\functional
 actor: FunctionalTester
 modules:
     enabled:
-        - Filesystem
-        - Yii2
+        - PhpBrowser:
+            url: 'http://localhost/projetopsi/maislusitania/frontend/web/'
+        - Yii2:
+            configFile: 'config/test-local.php'
+            part: [orm, email, fixtures]
+            transaction: true
+            cleanup: true
         - Asserts

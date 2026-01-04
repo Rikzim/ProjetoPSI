@@ -70,6 +70,6 @@ sudo systemctl reload apache2
 
 # Testes Funcionais 
 
--
-- 
+- php vendor/bin/codecept generate:test functional ExampleFunctionalTest -c common
+- php vendor/bin/codecept run functional NomeDoTesteFuncional -c common
 
