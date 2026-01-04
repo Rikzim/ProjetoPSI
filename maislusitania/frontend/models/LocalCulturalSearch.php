@@ -16,13 +16,14 @@ class LocalCulturalSearch extends LocalCultural
     public $distrito; // Filtro por distrito (alias para distrito_id)
     public $order;   // Campo para ordenação
 
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id', 'tipo_id', 'distrito_id', 'ativo', 'horario_id'], 'integer'],
+            [['id', 'tipo_id', 'distrito_id', 'ativo'], 'integer'],
             [['nome', 'morada', 'descricao', 'contacto_telefone', 'contacto_email', 'website', 'imagem_principal'], 'safe'],
             [['latitude', 'longitude'], 'number'],
             [['search', 'tipo', 'distrito', 'order'], 'safe'], // Adicionar campos customizados
@@ -120,7 +121,6 @@ class LocalCulturalSearch extends LocalCultural
 		           'ativo' => $this->ativo,
 		           'latitude' => $this->latitude,
 		           'longitude' => $this->longitude,
-		           'horario_id' => $this->horario_id,
         ]);
 
         $query->andFilterWhere(['like', 'nome', $this->nome])
