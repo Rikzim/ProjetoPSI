@@ -288,6 +288,9 @@ class AvaliacaoTest extends \Codeception\Test\Unit
         $user2 = $this->tester->grabFixture('user', 1);
         $local = $this->criarLocalCultural();
 
+        // Contar avaliações existentes para este local antes de adicionar novas
+        $countBefore = Avaliacao::find()->where(['local_id' => $local->id])->count();
+
         // Dois utilizadores diferentes avaliam o mesmo local
         $avaliacao1 = new Avaliacao([
             'utilizador_id' => $user1['id'],
@@ -305,9 +308,9 @@ class AvaliacaoTest extends \Codeception\Test\Unit
         ]);
         $this->assertTrue($avaliacao2->save());
 
-        // Verificar que o local tem duas avaliações
+        // Verificar que o local tem duas avaliações novas
         $avaliacoes = Avaliacao::find()->where(['local_id' => $local->id])->all();
-        $this->assertCount(2, $avaliacoes);
+        $this->assertCount($countBefore + 2, $avaliacoes);
     }
 
     public function testUtilizadorPodeAvaliarMultiplosLocais()
