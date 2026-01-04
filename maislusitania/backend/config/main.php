@@ -142,6 +142,20 @@ return [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
+                    'controller' => 'api/user-profile',
+                    'pluralize' => false,
+                    'extraPatterns' => [
+                        'GET me' => 'me',
+                        'PUT update-profile' => 'update-profile',
+                        'PUT change-password' => 'change-password',
+                        'DELETE delete-account' => 'delete-account',
+                    ],
+                    'tokens' => [
+                        '{id}' => '<id:\\d+>',
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
                     'controller' => [
                     'api/avaliacao',
                     'api/distrito',
@@ -151,7 +165,6 @@ return [
                     'api/tipo-bilhete',
                     'api/tipo-local',
                     'api/user',
-                    'api/user-profile',
                     ],
                     'pluralize' => true,
                     'tokens' => [

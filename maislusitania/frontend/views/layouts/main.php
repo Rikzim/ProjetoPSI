@@ -14,6 +14,9 @@ use frontend\widgets\CustomFooter;
 
 AppAsset::register($this);
 
+//Carregar favicon.ico
+$this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web') . '/favicon.ico']);
+
 // Definir ações que não devem mostrar header/footer
 $currentAction = Yii::$app->controller->action->id;
 $authActions = ['login', 'signup', 'request-password-reset', 'reset-password', 'resend-verification-email'];
