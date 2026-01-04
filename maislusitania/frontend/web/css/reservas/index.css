@@ -424,3 +424,106 @@
         font-size: 1.5rem;
     }
 }
+
+/* ListView Container - Override default styles */
+.tickets-container .tickets-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Fix for ListView item wrappers - make them not affect the grid */
+.tickets-grid-item {
+    display: contents;
+}
+
+/* Pagination Styling - Matching local-cultural style */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 2rem auto 3rem;
+    padding: 0 20px;
+    grid-column: 1 / -1;
+}
+
+.pagination {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination li {
+    display: inline-block;
+}
+
+.pagination a,
+.pagination span,
+.pagination .page-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 2px solid #2E5AAC;
+    border-radius: 50%;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    padding: 0;
+}
+
+.pagination a:hover,
+.pagination .page-link:hover {
+    background: #2E5AAC;
+    color: white;
+    border-color: #2E5AAC;
+}
+
+.pagination .active a,
+.pagination .active span,
+.pagination .active .page-link {
+    background: #2E5AAC;
+    color: white;
+    border-color: #2E5AAC;
+    cursor: default;
+}
+
+.pagination .disabled a,
+.pagination .disabled span,
+.pagination .disabled .page-link {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+.pagination .disabled .page-link:hover {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+}
+
+@media (max-width: 1400px) {
+    .tickets-container .tickets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .tickets-container .tickets-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+}
