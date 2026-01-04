@@ -66,6 +66,10 @@ class SignupForm extends Model
         $user->setPassword($this->password);
         $user->generateAuthKey();
         $user->generateEmailVerificationToken();
+
+        //PASSAR STATUS PARA 10 (ATIVO)
+        $user->status = 10;
+
         $user->save();
 
         //Atribuir role "user" ao novo utilizador
@@ -73,16 +77,18 @@ class SignupForm extends Model
         $userRole = $auth->getRole('user');
         $auth->assign($userRole, $user->getId());
 
-        //TODO: REFERENCIAR O USER AO USER PROFILE AQUI
 
         $userprofile = new UserProfile();
         $userprofile->user_id = $user->id;
         $userprofile->primeiro_nome = $this->primeiro_nome;
         $userprofile->ultimo_nome = $this->ultimo_nome;
 
+
+
         $userprofile->save();
 
-        return  $this->sendEmail($user);
+        //return  $this->sendEmail($user);
+        return true;
     }
 
     /**
