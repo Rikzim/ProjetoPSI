@@ -40,7 +40,7 @@ use yii\helpers\Url;
                             </div>
                             <a href="<?= Url::to(['/profile/me']) ?>" class="mobile-menu-link">Perfil</a>
                             <a href="<?= Url::to(['/favorito/index']) ?>" class="mobile-menu-link">Favoritos</a>
-                            <a href="<?= Url::to(['/bilhetes/index']) ?>" class="mobile-menu-link">Meus Bilhetes</a>
+                            <a href="<?= Url::to(['/reserva/index']) ?>" class="mobile-menu-link">Meus Bilhetes</a>
                             <?= Html::beginForm(['/site/logout'], 'post', ['style' => 'margin: 0']) ?>
                             <button type="submit" class="mobile-menu-link logout">Logout</button>
                             <?= Html::endForm() ?>

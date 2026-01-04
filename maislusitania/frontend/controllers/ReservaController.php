@@ -5,6 +5,7 @@ namespace frontend\controllers;
 use common\models\Reserva;
 use common\models\LinhaReserva;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -51,35 +52,73 @@ class ReservaController extends Controller
         if (Yii::$app->user->isGuest) {
             return $this->redirect(['site/login']);
         }
-        
+
         $userId = Yii::$app->user->id;
         $hoje = date('Y-m-d');
         
-        // Buscar todas as reservas do utilizador com eager loading das relações
-        $reservas = Reserva::find()
+        // Buscar reservas ativas e construir array de bilhetes individuais
+        $reservasAtivas = Reserva::find()
             ->where(['utilizador_id' => $userId])
             ->andWhere(['>=', 'data_visita', $hoje])
-            ->with([
-                'local',              // Carregar dados do local cultural
-                'linhaReservas',      // Carregar linhas de reserva (bilhetes)
-                'linhaReservas.tipoBilhete' // Carregar tipos de bilhete
-            ])
-            ->orderBy(['data_criacao' => SORT_DESC]) // Mais recentes primeiro
-            ->all();
-        $reservasExpiradas = Reserva::find()
-            ->where(['utilizador_id' => $userId])
-            ->andWhere(['<', 'data_visita', date('Y-m-d')])
-            ->with([
-                'local',              
-                'linhaReservas',      
-                'linhaReservas.tipoBilhete' 
-            ])
-            ->orderBy(['data_criacao' => SORT_DESC]) 
+            ->with(['local', 'linhaReservas', 'linhaReservas.tipoBilhete'])
+            ->orderBy(['data_criacao' => SORT_DESC])
             ->all();
         
+        $ticketsAtivos = [];
+        foreach ($reservasAtivas as $reserva) {
+            foreach ($reserva->linhaReservas as $linha) {
+                for ($i = 1; $i <= $linha->quantidade; $i++) {
+                    $ticketsAtivos[] = [
+                        'reserva' => $reserva,
+                        'linha' => $linha,
+                        'ticketNumber' => $i,
+                        'isExpirado' => false,
+                    ];
+                }
+            }
+        }
+        
+        $dataProviderAtivas = new ArrayDataProvider([
+            'allModels' => $ticketsAtivos,
+            'pagination' => [
+                'pageSize' => 6,
+                'pageParam' => 'page-ativos',
+            ],
+        ]);
+        
+        // Buscar reservas expiradas e construir array de bilhetes individuais
+        $reservasExpiradas = Reserva::find()
+            ->where(['utilizador_id' => $userId])
+            ->andWhere(['<', 'data_visita', $hoje])
+            ->with(['local', 'linhaReservas', 'linhaReservas.tipoBilhete'])
+            ->orderBy(['data_criacao' => SORT_DESC])
+            ->all();
+        
+        $ticketsExpirados = [];
+        foreach ($reservasExpiradas as $reserva) {
+            foreach ($reserva->linhaReservas as $linha) {
+                for ($i = 1; $i <= $linha->quantidade; $i++) {
+                    $ticketsExpirados[] = [
+                        'reserva' => $reserva,
+                        'linha' => $linha,
+                        'ticketNumber' => $i,
+                        'isExpirado' => true,
+                    ];
+                }
+            }
+        }
+        
+        $dataProviderExpiradas = new ArrayDataProvider([
+            'allModels' => $ticketsExpirados,
+            'pagination' => [
+                'pageSize' => 6,
+                'pageParam' => 'page-expirados',
+            ],
+        ]);
+        
         return $this->render('index', [
-            'reservas' => $reservas,
-            'reservasExpiradas' => $reservasExpiradas,
+            'dataProviderAtivas' => $dataProviderAtivas,
+            'dataProviderExpiradas' => $dataProviderExpiradas,
         ]);
     }
 

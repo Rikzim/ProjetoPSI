@@ -1,10 +1,11 @@
 <?php
 /** @var yii\web\View $this */
-/** @var array $reservas */
-/** @var array $reservasExpiradas */
+/** @var yii\data\ActiveDataProvider $dataProviderAtivas */
+/** @var yii\data\ActiveDataProvider $dataProviderExpiradas */
 
 use yii\helpers\Html;
-use frontend\widgets\TicketCard;
+use yii\widgets\ListView;
+use yii\widgets\LinkPager;
 
 $this->title = 'Meus Bilhetes';
 $this->registerCssFile('@web/css/reservas/index.css');
@@ -20,7 +21,7 @@ $this->registerCssFile('@web/css/reservas/index.css');
     </div>
 
     <div class="tickets-container">
-        <?php if (empty($reservas) && empty($reservasExpiradas)): ?>
+        <?php if ($dataProviderAtivas->totalCount == 0 && $dataProviderExpiradas->totalCount == 0): ?>
             <!-- Empty State -->
             <div class="empty-state">
                 <div class="empty-icon">
@@ -33,49 +34,49 @@ $this->registerCssFile('@web/css/reservas/index.css');
         <?php else: ?>
             
             <!-- Reservas Ativas -->
-            <?php if (!empty($reservas)): ?>
+            <?php if ($dataProviderAtivas->totalCount > 0): ?>
                 <div class="section-header">
                     <h2 class="section-title">Bilhetes Ativos</h2>
                     <p class="section-subtitle">Seus próximos bilhetes válidos para visitas</p>
                 </div>
                 
-                <div class="tickets-grid">
-                    <?php foreach ($reservas as $reserva): ?>
-                        <?php foreach ($reserva->linhaReservas as $linha): ?>
-                            <?php for ($i = 1; $i <= $linha->quantidade; $i++): ?>
-                                <?= TicketCard::widget([
-                                    'reserva' => $reserva,
-                                    'linha' => $linha,
-                                    'ticketNumber' => $i,
-                                    'isExpirado' => false,
-                                ]) ?>
-                            <?php endfor; ?>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
-                </div>
+                <?= ListView::widget([
+                    'dataProvider' => $dataProviderAtivas,
+                    'itemView' => '_reserva_item',
+                    'itemOptions' => ['class' => 'tickets-grid-item'],
+                    'options' => ['class' => 'tickets-grid'],
+                    'layout' => "{items}\n<div class='pagination-wrapper'>{pager}</div>",
+                    'pager' => [
+                        'class' => LinkPager::class,
+                        'options' => ['class' => 'pagination'],
+                        'linkOptions' => ['class' => 'page-link'],
+                        'disabledListItemSubTagOptions' => ['class' => 'page-link'],
+                    ],
+                    'emptyText' => '',
+                ]) ?>
             <?php endif; ?>
 
             <!-- Reservas Expiradas -->
-            <?php if (!empty($reservasExpiradas)): ?>
+            <?php if ($dataProviderExpiradas->totalCount > 0): ?>
                 <div class="section-header expired-section">
                     <h2 class="section-title">Bilhetes Expirados</h2>
                     <p class="section-subtitle">Histórico de bilhetes com data de visita ultrapassada</p>
                 </div>
                 
-                <div class="tickets-grid">
-                    <?php foreach ($reservasExpiradas as $reserva): ?>
-                        <?php foreach ($reserva->linhaReservas as $linha): ?>
-                            <?php for ($i = 1; $i <= $linha->quantidade; $i++): ?>
-                                <?= TicketCard::widget([
-                                    'reserva' => $reserva,
-                                    'linha' => $linha,
-                                    'ticketNumber' => $i,
-                                    'isExpirado' => true,
-                                ]) ?>
-                            <?php endfor; ?>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
-                </div>
+                <?= ListView::widget([
+                    'dataProvider' => $dataProviderExpiradas,
+                    'itemView' => '_reserva_item',
+                    'itemOptions' => ['class' => 'tickets-grid-item'],
+                    'options' => ['class' => 'tickets-grid'],
+                    'layout' => "{items}\n<div class='pagination-wrapper'>{pager}</div>",
+                    'pager' => [
+                        'class' => LinkPager::class,
+                        'options' => ['class' => 'pagination'],
+                        'linkOptions' => ['class' => 'page-link'],
+                        'disabledListItemSubTagOptions' => ['class' => 'page-link'],
+                    ],
+                    'emptyText' => '',
+                ]) ?>
             <?php endif; ?>
 
         <?php endif; ?>
