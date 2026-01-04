@@ -1,6 +1,6 @@
-<p align="center">
+<div align="center">
   <img src="maislusitania/frontend/web/images/logo/logo.svg" alt="Mais Lusitânia Logo" width="300" style="background-color:white; padding:10px;">
-</p>
+</div>
 
 # Mais Lusitânia 🇵🇹
 
