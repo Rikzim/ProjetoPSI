@@ -297,3 +297,43 @@
 .leaflet-container .leaflet-popup-close-button {
     display: none !important;
 }
+
+/* --- Responsive Design --- */
+
+/* For tablets and smaller devices */
+@media (max-width: 992px) {
+    .mapa-content {
+        flex-direction: column;
+    }
+
+    .sidebar-container {
+        width: 100%;
+    }
+
+    .map-wrapper {
+        width: 100%;
+        min-height: 650px; /* Adjust height for vertical layout */
+    }
+}
+
+/* For mobile phones */
+@media (max-width: 768px) {
+    .mapa-container {
+        padding: 20px 15px;
+    }
+
+    .mapa-header h1 {
+        font-size: 2rem;
+    }
+
+    .sidebar-left,
+    .instructions-box {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .map-wrapper {
+        min-height: 500px;
+        border-radius: 20px;
+    }
+}
