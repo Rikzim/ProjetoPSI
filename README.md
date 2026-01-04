@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="maislusitania/frontend/web/images/logo/logo.svg" alt="Mais Lusitânia Logo" width="300" style="background-color:white; padding:10px;">
+</p>
+
 # Mais Lusitânia 🇵🇹
 
 > Uma plataforma web para explorar e descobrir locais e eventos culturais em Portugal.
