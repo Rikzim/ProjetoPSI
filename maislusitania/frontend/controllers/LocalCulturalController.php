@@ -41,9 +41,15 @@ class LocalCulturalController extends Controller
                         [
                             'actions' => ['index', 'view'],
                             'allow' => true,
-                            'roles' => ['?', '@'],
+                            'roles' => ['?', 'viewPlace'],
+                        ],
+                        [
+                            'actions' => ['toggle-favorite'],
+                            'allow' => true,
+                            'roles' => ['removeFavorite'],
                         ],
                     ],
+                
                 ],
             ]
         );

@@ -39,15 +39,10 @@ class FavoritoController extends Controller
                             'roles' => ['viewFavorites'],
                         ],
                         [
-                            'actions' => ['add', 'toggle'],
+                            'actions' => ['toggle-favorite'],
                             'allow' => true,
-                            'roles' => ['addFavorite'],
-                        ],
-                        [
-                            'actions' => ['remove'],
-                            'allow' => true,
-                            'roles' => ['removeFavorite'],
-                        ],
+                            'roles' => ['addFavorite', 'removeFavorite'],
+                        ]
                     ],
                 ],
             ]
