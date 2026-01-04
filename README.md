@@ -98,7 +98,13 @@ Siga os passos abaixo para configurar o ambiente de desenvolvimento local.
     php yii migrate
     ```
 
-6.  **Configurar o Servidor Web (Exemplo para Apache):**
+6.  **Inicializar as Funções e Permissões (RBAC):**
+    Este passo é crucial para que o sistema de permissões funcione. Execute o seguinte comando:
+    ```bash
+    php yii rbac/init
+    ```
+
+7.  **Configurar o Servidor Web (Exemplo para Apache):**
     Configure os seus Virtual Hosts para apontarem para as pastas `frontend/web` and `backend/web`.
 
     **Frontend:**
