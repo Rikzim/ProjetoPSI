@@ -100,7 +100,9 @@ Siga os passos abaixo para configurar o ambiente de desenvolvimento local.
     As migrações criam a estrutura de tabelas necessárias. Na raiz da pasta `maislusitania`, execute:
     ```bash
     php yii migrate
+    yii migrate --migrationPath=@yii/rbac/migrations
     ```
+    (ATENÇÃO: Por enquanto as migrations não irão criar a estrutura correta da base de dados, o melhor por agora é ter o fichero já com a base de dados completa e seguir para o passo 6.)
 
 6.  **Inicializar as Funções e Permissões (RBAC):**
     Este passo é crucial para que o sistema de permissões funcione. Execute o seguinte comando:
