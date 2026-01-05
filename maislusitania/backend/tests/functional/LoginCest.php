@@ -26,19 +26,74 @@ class LoginCest
             ]
         ];
     }
-    
+
     /**
      * @param FunctionalTester $I
      */
-    public function loginUser(FunctionalTester $I)
+    public function testLoginPageIsAccessible(FunctionalTester $I)
     {
-        $I->amOnRoute('/site/login');
-        $I->fillField('Username', 'erau');
-        $I->fillField('Password', 'password_0');
-        $I->click('login-button');
+        $I->amOnPage('/site/login');
+        $I->see('Login');
+    }
 
-        $I->see('Logout (erau)', 'form button[type=submit]');
-        $I->dontSeeLink('Login');
-        $I->dontSeeLink('Signup');
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testLoginWithValidCredentials(FunctionalTester $I)
+    {
+        $I->amOnPage('/site/login');
+        $I->submitForm('#login-form', [
+            'LoginForm[username]' => 'joaomatias',
+            'LoginForm[password]' => '12345678',
+        ]);
+
+        $I->dontSee('Login');
+        $I->dontSeeElement('#login-form');
+    }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testLoginWithInvalidCredentials(FunctionalTester $I)
+    {
+        $I->amOnPage('/site/login');
+        $I->submitForm('#login-form', [
+            'LoginForm[username]' => 'invalid_user',
+            'LoginForm[password]' => 'wrong_password',
+        ]);
+
+        $I->seeElement('#login-form');
+    }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testLoginWithEmptyFields(FunctionalTester $I)
+    {
+        $I->amOnPage('/site/login');
+        $I->submitForm('#login-form', [
+            'LoginForm[username]' => '',
+            'LoginForm[password]' => '',
+        ]);
+
+        $I->seeElement('#login-form');
+        $I->see('cannot be blank');
+    }
+
+    /**
+     * Test that a user without backend permission cannot access backend
+     * @param FunctionalTester $I
+     */
+    public function testLoginWithoutBackendPermission(FunctionalTester $I)
+    {
+        $I->amOnPage('/site/login');
+        $I->submitForm('#login-form', [
+            'LoginForm[username]' => 'clientejoao',
+            'LoginForm[password]' => '12345678',
+        ]);
+
+        // User without admin/gestor role should not be able to access backend
+        $I->amOnPage('/site/index');
+        $I->seeInCurrentUrl('login');
     }
 }
