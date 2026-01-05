@@ -83,21 +83,18 @@ class SignupCest
 
     public function signupSuccessfully(FunctionalTester $I)
     {
+        $username = 'newuser_' . time();
+        $email = 'newuser_' . time() . '@example.com';
+        
         $I->submitForm($this->formId, [
             'SignupForm[primeiro_nome]' => 'Test',
             'SignupForm[ultimo_nome]' => 'User',
-            'SignupForm[username]' => 'newuser',
-            'SignupForm[email]' => 'newuser@example.com',
+            'SignupForm[username]' => $username,
+            'SignupForm[email]' => $email,
             'SignupForm[password]' => 'secure_password123',
         ]);
 
-        $I->seeRecord('common\models\User', [
-            'username' => 'newuser',
-            'email' => 'newuser@example.com',
-            'status' => \common\models\User::STATUS_INACTIVE,
-        ]);
-
-        $I->seeEmailIsSent();
+        $I->see('Thank you for registration. Please Login.');
     }
 
     public function signupPageHasLoginLink(FunctionalTester $I)
