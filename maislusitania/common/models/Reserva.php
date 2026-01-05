@@ -356,7 +356,7 @@ class Reserva extends \yii\db\ActiveRecord
     public function FazPublishNoMosquitto($canal, $msg)
     {
         $server = "172.22.21.218"; 
-        $port = 8080;
+        $port = 443;
         $username = ""; // set your username
         $password = ""; // set your password
         $client_id = "phpMQTT-publisher"; // unique!
