@@ -4,6 +4,8 @@ namespace backend\modules\api\controllers;
 use yii\rest\ActiveController;
 use yii\data\ActiveDataProvider;
 use yii\filters\Cors;
+use yii\filters\auth\QueryParamAuth;
+use yii\filters\AccessControl;
 
 class DistritoController extends ActiveController
 {
@@ -51,6 +53,19 @@ class DistritoController extends ActiveController
             ],
         ];
         
+        $behaviors['authenticator'] = [
+            'class' => QueryParamAuth::class,
+        ];
+
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'allow' => true,
+                    'roles' => ['admin'],
+                ],
+            ],
+        ];
     
         return $behaviors;
     } 
