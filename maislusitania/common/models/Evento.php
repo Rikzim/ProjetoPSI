@@ -141,17 +141,23 @@ class Evento extends \yii\db\ActiveRecord
     public function FazPublishNoMosquitto($canal, $msg)
     {
         $server = "172.22.21.218"; 
-        $port = 443;
-        $username = ""; // set your username
-        $password = ""; // set your password
-        $client_id = "phpMQTT-publisher"; // unique!
-        $mqtt = new \Bluerhinos\phpMQTT($server, $port, $client_id);
+        $port = 8080;
+        $username = "lusitania";
+        $password = "12345678";
+        $client_id = "phpMQTT-publisher-" . uniqid();
+        
+        try {
+            $mqtt = new \Bluerhinos\phpMQTT($server, $port, $client_id);
 
-        if ($mqtt->connect(true, NULL, $username, $password)){
-            $mqtt->publish($canal, $msg, 0);
-            $mqtt->close();
-        }else { 
-            file_put_contents("debug.output","Time out!");
+            if ($mqtt->connect(true, NULL, $username, $password)) {
+                $mqtt->publish($canal, $msg, 0);
+                $mqtt->close();
+                Yii::info("MQTT publicado: {$canal}", 'mqtt');
+            } else {
+                Yii::error("MQTT: Falha ao conectar em {$server}:{$port}", 'mqtt');
+            }
+        } catch (\Exception $e) {
+            Yii::error("MQTT Exception: " . $e->getMessage(), 'mqtt');
         }
     }
 }
