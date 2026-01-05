@@ -140,7 +140,7 @@ class Evento extends \yii\db\ActiveRecord
 
     public function FazPublishNoMosquitto($canal, $msg)
     {
-        $server = "127.0.0.1"; 
+        $server = "172.22.21.218"; 
         $port = 1883;
         $username = ""; // set your username
         $password = ""; // set your password

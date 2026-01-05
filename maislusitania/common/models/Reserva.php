@@ -336,9 +336,9 @@ class Reserva extends \yii\db\ActiveRecord
         // Converter para JSON
         $myJSON = json_encode($myObj);
         if($insert)
-            $this->FazPublishNoMosquitto("INSERT",$myJSON);
+            $this->FazPublishNoMosquitto("Reserva INSERT",$myJSON);
         else
-            $this->FazPublishNoMosquitto("UPDATE",$myJSON);
+            $this->FazPublishNoMosquitto("Reserva UPDATE",$myJSON);
     }
 
     public function afterDelete()
@@ -355,7 +355,7 @@ class Reserva extends \yii\db\ActiveRecord
 
     public function FazPublishNoMosquitto($canal, $msg)
     {
-        $server = "127.0.0.1"; 
+        $server = "172.22.21.218"; 
         $port = 1883;
         $username = ""; // set your username
         $password = ""; // set your password
