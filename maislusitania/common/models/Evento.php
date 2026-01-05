@@ -141,7 +141,7 @@ class Evento extends \yii\db\ActiveRecord
     public function FazPublishNoMosquitto($canal, $msg)
     {
         $server = "172.22.21.218"; 
-        $port = 1883;
+        $port = 8080;
         $username = ""; // set your username
         $password = ""; // set your password
         $client_id = "phpMQTT-publisher"; // unique!
