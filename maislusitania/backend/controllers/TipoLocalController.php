@@ -175,17 +175,9 @@ class TipoLocalController extends Controller
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
-        $currentImage = $model->icone;
 
         if ($model->delete()) {
             Yii::$app->session->setFlash('success', 'Tipo de Local deletado com sucesso!');
-
-            if (!empty($currentImage)) {
-                $imagePath = Yii::getAlias('@uploadPath') . '/' . $currentImage;
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
         } else {
             Yii::$app->session->setFlash('error', 'Erro ao deletar o Tipo de Local.');
         }

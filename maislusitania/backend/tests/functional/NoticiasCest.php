@@ -23,7 +23,7 @@ class NoticiasCest
         // Login como admin antes de cada teste
         $I->amOnPage('/site/login');
         $I->submitForm('#login-form', [
-            'LoginForm[username]' => 'joaomatias',
+            'LoginForm[username]' => 'mariofernandes',
             'LoginForm[password]' => '12345678',
         ]);
     }
