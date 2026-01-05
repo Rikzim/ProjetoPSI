@@ -79,6 +79,11 @@ class AvaliacaoController extends ActiveController
                     'roles' => ['addReview'],
                 ],
                 [
+                    'actions' => ['edit'],
+                    'allow' => true,
+                    'roles' => ['editOwnReview', 'editAnyReview'],
+                ],
+                [
                     'actions' => ['remove'],
                     'allow' => true,
                     'roles' => ['deleteOwnReview', 'deleteAnyReview'],
@@ -91,14 +96,24 @@ class AvaliacaoController extends ActiveController
 
     public function actionAdd($localid)
     {
-        $user = Yii::$app->user->identity;
+        $modelClass = $this->modelClass;
+        $userId = Yii::$app->user->id;
 
-        $model = new $this->modelClass;
+        // Procure uma avaliação existente deste utilizador para este local, ativa ou inativa.
+        $model = $modelClass::findOne([
+            'local_id' => $localid,
+            'utilizador_id' => $userId,
+        ]);
 
-        $model->local_id = $localid;
-        $model->utilizador_id = $user->id;
-        $model->classificacao = Yii::$app->request->post('classificacao');
-        $model->comentario = Yii::$app->request->post('comentario', null);
+        // Se não existir nenhuma, crie uma nova.
+        if ($model === null) {
+            $model = new $this->modelClass;
+            $model->local_id = $localid;
+            $model->utilizador_id = $userId;
+        }
+        
+        // Carregue os novos dados, atualize a data e defina como ativo.
+        $model->load(Yii::$app->request->getBodyParams(), '');
         $model->data_avaliacao = date('Y-m-d H:i:s');
         $model->ativo = 1;
 
@@ -111,16 +126,16 @@ class AvaliacaoController extends ActiveController
         }
     }
 
-    public function actionRemove($id){
+    public function actionEdit($id)
+    {
         $user = Yii::$app->user;
-        
         $modelClass = $this->modelClass;
 
         $avaliacao = null;
-        if ($user->can('deleteAnyReview')) {
-            $avaliacao = $modelClass::findOne($id);
+        if ($user->can('editAnyReview')) {
+            $avaliacao = $modelClass::findOne(['id' => $id, 'ativo' => 1]);
         } else {
-            $avaliacao = $modelClass::findOne(['id' => $id, 'utilizador_id' => $user->id]);
+            $avaliacao = $modelClass::findOne(['id' => $id, 'utilizador_id' => $user->id, 'ativo' => 1]);
         }
 
         if (!$avaliacao) {
@@ -128,7 +143,36 @@ class AvaliacaoController extends ActiveController
             return ['status' => 'error', 'message' => 'Avaliação não encontrada'];
         }
 
-        if ($avaliacao->delete()) {
+        $avaliacao->load(Yii::$app->request->getBodyParams(), '');
+
+        if ($avaliacao->save()) {
+            Yii::$app->response->statusCode = 200;
+            return $avaliacao;
+        } else {
+            Yii::$app->response->statusCode = 400;
+            return ['errors' => $avaliacao->errors];
+        }
+    }
+
+    public function actionRemove($id){
+        $user = Yii::$app->user;
+        
+        $modelClass = $this->modelClass;
+
+        $avaliacao = null;
+        if ($user->can('deleteAnyReview')) {
+            $avaliacao = $modelClass::findOne(['id' => $id, 'ativo' => 1]);
+        } else {
+            $avaliacao = $modelClass::findOne(['id' => $id, 'utilizador_id' => $user->id, 'ativo' => 1]);
+        }
+
+        if (!$avaliacao) {
+            Yii::$app->response->statusCode = 404;
+            return ['status' => 'error', 'message' => 'Avaliação não encontrada'];
+        }
+
+        $avaliacao->ativo = 0;
+        if ($avaliacao->save()) {
             Yii::$app->response->statusCode = 200;
             return ['status' => 'success', 'message' => 'Avaliação removida com sucesso'];
         } else {

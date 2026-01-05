@@ -12,6 +12,11 @@ return [
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
+    'on beforeRequest' => function ($event) {
+        if (strpos(Yii::$app->request->getPathInfo(), 'api/') === 0) {
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        }
+    },
     'modules' => [
         'api' => [
             'class' => 'backend\modules\api\ModuleAPI',
@@ -133,6 +138,7 @@ return [
                     'pluralize' => true,
                     'extraPatterns' => [
                         'POST add/{localid}' => 'add',
+                        'PUT edit/{id}' => 'edit',
                         'DELETE remove/{id}' => 'remove',
                     ],
                     'tokens' => [
@@ -157,7 +163,6 @@ return [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                    'api/avaliacao',
                     'api/distrito',
                     'api/linha-reserva',
                     'api/login-form', //Funciona
