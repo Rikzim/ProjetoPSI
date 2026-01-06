@@ -20,16 +20,80 @@ class LocalCulturalController extends ActiveController
     // Define o modelo
     // ========================================
     public $modelClass = 'common\models\LocalCultural';
-
     // ========================================
     // Configura data provider
     // ========================================
     public function actions()
     {
         $actions = parent::actions();
-        unset($actions['view']); // Remover ação view padrão
-        unset($actions['index']); // Remover ação index padrão
+        unset($actions['view']); // Remover ação view padrão para personalização
+        unset($actions['index']); // Remover ação index padrão para personalização
+        unset($actions['create']); // Remover ação create padrão que nao é usada
+        unset($actions['update']); // Remover ação update padrão que nao é usada
+        unset($actions['delete']); // Remover ação delete padrão que nao é usada
         return $actions;
+    }
+    // ========================================
+    // Define campos a retornar
+    // ========================================
+    public function fields()
+    {
+        return [
+            'id',
+            'nome',
+            'tipoLocal',
+            'distrito',
+            'imagem',
+            'morada',
+            'descricao',
+            'contacto_telefone',
+            'contacto_email',
+            'website',
+            'ativo',
+            'latitude',
+            'longitude',
+        ];
+    }
+    // ========================================
+    // Controle de permissões
+    // ========================================
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        // CORS para todos os controllers
+        $behaviors['corsFilter'] = [
+            'class' => Cors::class,
+            'cors' => [
+                'Origin' => ['*'],
+                'Access-Control-Request-Method' => ['GET','POST','PUT','DELETE','OPTIONS'],
+                'Access-Control-Allow-Credentials' => true,
+            ],
+        ];
+
+        $behaviors['authenticator'] = [
+            'class' => QueryParamAuth::class,
+            'optional' => ['index', 'view', 'distrito', 'tipo-local', 'search'], // Ações que não requerem autenticação
+        ];
+
+        $behaviors['contentNegotiator'] = [ // Resposta em JSON
+            'class' => ContentNegotiator::class,
+            'formats' => [
+                'application/json' => Response::FORMAT_JSON,
+            ],
+        ];
+        
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'actions' => ['index', 'view', 'distrito', 'tipo-local', 'search', 'avaliacoes'], // Ações com acesso público
+                    'allow' => true,
+                    'roles' => ['?', '@'],
+                ],
+            ],
+        ];
+        return $behaviors;
     }
 
     // Lista todos os locais culturais ativos
@@ -71,6 +135,7 @@ class LocalCulturalController extends ActiveController
 
         return $data;
     }
+
     // Visualiza um local específico por ID
     public function actionView($id)
     {
@@ -98,7 +163,12 @@ class LocalCulturalController extends ActiveController
         }
         return $this->formatLocalData($local);
     }
+
+    // ========================================
     // Extra Patterns
+    // ========================================
+
+    // Filtra locais culturais por distrito
     public function actionDistrito($nome)
     {
         $distrito = Distrito::find()
@@ -144,6 +214,8 @@ class LocalCulturalController extends ActiveController
 
         return $data;
     }
+
+    // Filtra locais culturais por tipo de local
     public function actionTipoLocal($nome)
     {
         $tipolocal = TipoLocal::find()
@@ -190,6 +262,7 @@ class LocalCulturalController extends ActiveController
         return $data;
     }
 
+    // Pesquisa locais culturais por nome (suporta múltiplas palavras)
     public function actionSearch($nome)
     {
         $query = LocalCultural::find()
@@ -232,6 +305,45 @@ class LocalCulturalController extends ActiveController
             return $result;
         }, $locais);
         
+        Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
+
+        return $data;
+    }
+
+    // Obtém avaliações de um local cultural específico
+    public function actionAvaliacoes($id)
+    {
+        $modelClass = $this->modelClass;
+        $local = $modelClass::find()
+            ->where(['id' => $id, 'ativo' => true])
+            ->with(['avaliacaos' => function($query) {
+                $query->andWhere(['ativo' => true]);
+            }])
+            ->one();
+
+        if (!$local) {
+            Yii::$app->response->statusCode = 404;
+            return ['error' => 'Local cultural não encontrado.'];
+        }
+
+        $avaliacoes = $local->avaliacaos;
+
+        if (empty($avaliacoes)) {
+            Yii::$app->response->statusCode = 404;
+            return ['error' => 'Nenhuma avaliação encontrada para este local cultural.'];
+        }
+
+        $data = array_map(function($avaliacao) {
+            return [
+                'id' => $avaliacao->id,
+                'utilizador' => $avaliacao->user->username ?? 'Anônimo',
+                'classificacao' => (float)$avaliacao->classificacao,
+                'comentario' => $avaliacao->comentario,
+                'data_avaliacao' => date('Y-m-d', strtotime($avaliacao->data_avaliacao)),
+                'ativo' => (bool)$avaliacao->ativo,
+            ];
+        }, $avaliacoes);
+
         Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
 
         return $data;
@@ -312,68 +424,4 @@ class LocalCulturalController extends ActiveController
 
         return $data;
     }
-    // ========================================
-    // Define campos a retornar
-    // ========================================
-    public function fields()
-    {
-        return [
-            'id',
-            'nome',
-            'tipoLocal',
-            'distrito',
-            'imagem',
-            'morada',
-            'descricao',
-            'contacto_telefone',
-            'contacto_email',
-            'website',
-            'ativo',
-            'latitude',
-            'longitude',
-        ];
-    }
-
-    // ========================================
-    // Controle de permissões
-    // ========================================
-    public function behaviors()
-    {
-        $behaviors = parent::behaviors();
-
-        // CORS para todos os controllers
-        $behaviors['corsFilter'] = [
-            'class' => Cors::class,
-            'cors' => [
-                'Origin' => ['*'],
-                'Access-Control-Request-Method' => ['GET','POST','PUT','DELETE','OPTIONS'],
-                'Access-Control-Allow-Credentials' => true,
-            ],
-        ];
-
-        $behaviors['authenticator'] = [
-            'class' => QueryParamAuth::class,
-            'optional' => ['index', 'view', 'distrito', 'tipo-local', 'search'],
-        ];
-
-        $behaviors['contentNegotiator'] = [ // Resposta em JSON
-            'class' => ContentNegotiator::class,
-            'formats' => [
-                'application/json' => Response::FORMAT_JSON,
-            ],
-        ];
-        
-        $behaviors['access'] = [
-            'class' => AccessControl::class,
-            'rules' => [
-                [
-                    'actions' => ['index', 'view', 'distrito', 'tipo-local', 'search'],
-                    'allow' => true,
-                    'roles' => ['?', '@'],
-                ],
-            ],
-        ];
-
-        return $behaviors;
-    } 
 }

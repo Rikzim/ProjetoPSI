@@ -57,10 +57,11 @@ return [
                         'GET distrito/{nome}' => 'distrito', // Permite filtrar por distrito
                         'GET tipo-local/{nome}' => 'tipo-local', // Permite filtrar por tipo de local
                         'GET search/{nome}' => 'search', // Permite pesquisa por nome
+                        'GET {id}/avaliacoes' => 'avaliacoes', // Permite obter avaliações de um local
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>', // nome alfanumérico com hífens e espaços
                     ],
                 ],
                 [
@@ -70,10 +71,12 @@ return [
                     'extraPatterns' => [
                         'GET tipo-local/{nome}' => 'tipo-local', // Permite filtrar por tipo de local
                         'GET search/{nome}' => 'search', // Permite pesquisa por nome
+                        'GET data/{data}' => 'data', // Permite filtrar por data
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>', // nome alfanumérico com hífens e espaços
+                        '{data}' => '<data:\\d{4}-\\d{2}-\\d{2}>', // data no formato YYYY-MM-DD
                     ],
                 ],
                 [
@@ -83,10 +86,12 @@ return [
                     'extraPatterns' => [
                         'GET tipo-local/{nome}' => 'tipo-local', // Permite filtrar por tipo de local
                         'GET search/{nome}' => 'search', // Permite pesquisa por nome
+                        'GET data/{data}' => 'data', // Permite filtrar por data
                     ],
                     'tokens' => [
                         '{id}' => '<id:\\d+>',
                         '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>',
+                        '{data}' => '<data:\\d{4}-\\d{2}-\\d{2}>', // data no formato YYYY-MM-DD
                     ],
                 ],
                 [
@@ -99,20 +104,20 @@ return [
                         'DELETE remove/{localid}' => 'remove', // Permite filtrar por distrito
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{localid}' => '<localid:\\d+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{localid}' => '<localid:\\d+>', // id numérico
                     ],
                 ],
-                                [
+                [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'api/reserva', 
                     'pluralize' => true,
                     'extraPatterns' => [
-                        'GET search/{nome}' => 'search',
+                        'GET search/{nome}' => 'search', // Permite pesquisa por nome
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>', // nome alfanumérico com hífens e espaços
                     ],
                 ],
                 [
@@ -120,11 +125,11 @@ return [
                     'controller' => 'api/mapa', 
                     'pluralize' => true,
                     'extraPatterns' => [
-                        'GET search/{nome}' => 'search',
+                        'GET search/{nome}' => 'search', // Permite pesquisa por nome
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{nome}' => '<nome:[a-zA-Z0-9\\-]+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{nome}' => '<nome:[a-zA-Z0-9\\-\s]+>', // nome alfanumérico com hífens e espaços
                     ],
                 ],
                 [
@@ -132,12 +137,12 @@ return [
                     'controller' => 'api/avaliacao',
                     'pluralize' => true,
                     'extraPatterns' => [
-                        'POST add/{localid}' => 'add',
-                        'DELETE remove/{id}' => 'remove',
+                        'POST add/{localid}' => 'add', // Adiciona avaliação a um local
+                        'DELETE remove/{id}' => 'remove', // Remove avaliação pelo ID
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
-                        '{localid}' => '<localid:\\d+>',
+                        '{id}' => '<id:\\d+>', // id numérico
+                        '{localid}' => '<localid:\\d+>', // id numérico
                     ],
                 ],
                 [
@@ -145,26 +150,22 @@ return [
                     'controller' => 'api/user-profile',
                     'pluralize' => false,
                     'extraPatterns' => [
-                        'GET me' => 'me',
-                        'PUT update-profile' => 'update-profile',
-                        'PUT change-password' => 'change-password',
-                        'DELETE delete-account' => 'delete-account',
+                        'GET me' => 'me', // Obtém o perfil do usuário autenticado
+                        'PUT update-profile' => 'update-profile', // Atualiza o perfil do utilizador
+                        'PUT change-password' => 'change-password', // Altera a passe do utilizador
+                        'DELETE delete-account' => 'delete-account', // Exclui a conta do utilizador
                     ],
                     'tokens' => [
-                        '{id}' => '<id:\\d+>',
+                        '{id}' => '<id:\\d+>', // id numérico
                     ],
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => [
-                    'api/avaliacao',
-                    'api/distrito',
                     'api/linha-reserva',
                     'api/login-form', //Funciona
                     'api/signup-form', //Funciona 
                     'api/tipo-bilhete',
-                    'api/tipo-local',
-                    'api/user',
                     ],
                     'pluralize' => true,
                     'tokens' => [

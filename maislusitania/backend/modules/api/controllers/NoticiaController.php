@@ -23,8 +23,11 @@ class NoticiaController extends ActiveController
     public function actions()
     {
         $actions = parent::actions();
-        unset($actions['view']); // Remover ação view padrão
-        unset($actions['index']); // Remover ação index padrão
+        unset($actions['view']); // Remover ação view padrão para personalização
+        unset($actions['index']); // Remover ação index padrão para personalização
+        unset($actions['create']); // Remover ação create padrão que não será usada
+        unset($actions['update']); // Remover ação update padrão que não será usada
+        unset($actions['delete']); // Remover ação delete padrão que não será usada
         return $actions;
     }
 
@@ -56,32 +59,32 @@ class NoticiaController extends ActiveController
                 'Access-Control-Allow-Credentials' => true,
             ],
         ];
-
+        // Resposta em JSON
         $behaviors['contentNegotiator'] = [
             'class' => ContentNegotiator::class,
             'formats' => [
                 'application/json' => Response::FORMAT_JSON,
             ],
         ];
-
+        // Autenticação via token
         $behaviors['authenticator'] = [
             'class' => QueryParamAuth::class,
         ];
-
+        // Controle de acesso
         $behaviors['access'] = [
             'class' => AccessControl::class,
             'rules' => [
                 [
-                    'actions' => ['index', 'view', 'tipo-local', 'search'],
+                    'actions' => ['index', 'view', 'tipo-local', 'search', 'data'],
                     'allow' => true,
-                    'roles' => ['@'],
+                    'roles' => ['@'], // Apenas utilizadores autenticados
                 ],
             ],
         ];
-        
         return $behaviors;
     } 
 
+    // Lista todas as notícias ativas
     public function actionIndex()
     {
         $modelClass = $this->modelClass;
@@ -110,6 +113,7 @@ class NoticiaController extends ActiveController
         return $data;
     }
 
+    // Obtém detalhes de uma notícia específica
     public function actionView($id)
     {   
         $modelClass = $this->modelClass;
@@ -134,8 +138,11 @@ class NoticiaController extends ActiveController
 
         return $data;
     }
-
+    // ========================================
     // Extra Patterns
+    // ========================================
+
+    // Filtra notícias por tipo de local
     public function actionTipoLocal($nome)
     {
         $modelClass = $this->modelClass;
@@ -165,6 +172,36 @@ class NoticiaController extends ActiveController
         return $data;
     }
 
+    // Filtra notícias por data de publicação
+    public function actionData($data)
+    {
+        $modelClass = $this->modelClass;
+        $noticias = $modelClass::find()
+            ->where(['DATE(data_publicacao)' => $data, 'ativo' => true])
+            ->all();
+
+        if (empty($noticias)) {
+            Yii::$app->response->statusCode = 404;
+            return ['error' => "Nenhuma notícia encontrada para a data '$data'."];
+        }
+
+        $data = array_map(function($noticia) {
+            return [
+                'id' => $noticia->id,
+                'nome' => $noticia->titulo,
+                'local_nome' => $noticia->local->nome ?? null,
+                'resumo' => $noticia->resumo,
+                'imagem' => $noticia->getImageAPI(),
+                'data_publicacao' => $noticia->data_publicacao,
+            ];
+        }, $noticias);
+
+        Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
+
+        return $data;
+    }
+
+    // Pesquisa notícias por nome (suporta múltiplas palavras)
     public function actionSearch($nome)
     {
         $modelClass = $this->modelClass;

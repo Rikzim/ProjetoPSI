@@ -25,6 +25,9 @@ class EventoController extends ActiveController
         $actions = parent::actions();
         unset($actions['view']); // Remover ação view padrão
         unset($actions['index']); // Remover ação index padrão
+        unset($actions['create']); // Remover ação create padrão que não será usada
+        unset($actions['update']); // Remover ação update padrão que não será usada
+        unset($actions['delete']); // Remover ação delete padrão que não será usada
         return $actions;
     }
 
@@ -50,8 +53,8 @@ class EventoController extends ActiveController
         if (!is_array($behaviors)) {
             $behaviors = [];
         }
-
-        $behaviors['corsFilter'] = [ // Adiciona CORS 
+        // CORS para todos os controllers
+        $behaviors['corsFilter'] = [
             'class' => Cors::class,
             'cors' => [
                 'Origin' => ['*'],
@@ -59,23 +62,25 @@ class EventoController extends ActiveController
                 'Access-Control-Allow-Credentials' => true,
             ],
         ];
-        $behaviors['contentNegotiator'] = [ // Resposta em JSON
+        // Resposta em JSON
+        $behaviors['contentNegotiator'] = [
             'class' => ContentNegotiator::class,
             'formats' => [
                 'application/json' => Response::FORMAT_JSON,
             ],
         ];
-        $behaviors['authenticator'] = [ // Adiciona autenticação
+        // Autenticação via token
+        $behaviors['authenticator'] = [
             'class' => QueryParamAuth::class,
         ];
-        
+        // Controle de acesso
         $behaviors['access'] = [
             'class' => AccessControl::class,
             'rules' => [
                 [
-                    'actions' => ['index', 'view', 'tipo-local', 'search'],
+                    'actions' => ['index', 'view', 'tipo-local', 'search', 'data'],
                     'allow' => true,
-                    'roles' => ['@'],
+                    'roles' => ['@'], // Apenas utilizadores autenticados
                 ],
             ],
         ];
@@ -83,6 +88,7 @@ class EventoController extends ActiveController
         return $behaviors;
     } 
 
+    // Lista todos os eventos ativos
     public function actionIndex()
     {
         $modelClass = $this->modelClass;
@@ -113,6 +119,7 @@ class EventoController extends ActiveController
         return $data;
     }
 
+    // Obtém detalhes de um evento específico
     public function actionView($id)
     {
         $modelClass = $this->modelClass;
@@ -135,8 +142,11 @@ class EventoController extends ActiveController
         }, [$evento]);
         return $data;
     }
-
+    // ========================================
     // Extra Patterns
+    // ========================================
+
+    // Filtra eventos por tipo de local
     public function actionTipoLocal($nome)
     {
         $modelClass = $this->modelClass;
@@ -165,33 +175,7 @@ class EventoController extends ActiveController
         return $data;
     }
 
-    public function actionSearch1($nome)
-    {
-        $modelClass = $this->modelClass;
-        $eventos = $modelClass::find()
-            ->where(['LIKE', 'LOWER(titulo)', strtolower($nome)])
-            ->andWhere(['ativo' => true])
-            ->all();
-        if (empty($eventos)) {
-            Yii::$app->response->statusCode = 404;
-            return ['error' => 'Nenhum evento encontrado com esse nome.'];
-        }
-
-        $data = array_map(function($evento) {
-            return [
-                'id' => $evento->id,
-                'titulo' => $evento->titulo,
-                'descricao' => $evento->descricao,
-                'imagem' => $evento->getImageAPI(),
-                'data_inicio' => date('d/m/Y H:i', strtotime($evento->data_inicio)),
-                'data_fim' => date('d/m/Y H:i', strtotime($evento->data_fim)),
-            ];
-        }, $eventos);
-
-        Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
-
-        return $data;
-    }
+    // Pesquisa eventos por nome
     public function actionSearch($nome)
     {
         $modelClass = $this->modelClass;
@@ -229,6 +213,35 @@ class EventoController extends ActiveController
             ];
         }, $eventos);
         
+        Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
+
+        return $data;
+    }
+
+    // Filtra eventos por data
+    public function actionData($data)
+    {
+        $modelClass = $this->modelClass;
+        $eventos = $modelClass::find()
+            ->where(['DATE(data_inicio)' => $data])
+            ->andWhere(['ativo' => true])
+            ->all();
+
+        if (empty($eventos)) {
+            Yii::$app->response->statusCode = 404;
+            return ['error' => 'Nenhum evento encontrado para essa data.'];
+        }
+        $data = array_map(function($evento) {
+            return [
+                'id' => $evento->id,
+                'titulo' => $evento->titulo,
+                'descricao' => $evento->descricao,
+                'imagem' => $evento->getImageAPI(),
+                'data_inicio' => date('d/m/Y H:i', strtotime($evento->data_inicio)),
+                'data_fim' => date('d/m/Y H:i', strtotime($evento->data_fim)),
+            ];
+        }, $eventos);
+
         Yii::$app->response->headers->set('X-Total-Count', (string)count($data));
 
         return $data;

@@ -57,21 +57,18 @@ class AvaliacaoController extends ActiveController
                 'Access-Control-Allow-Credentials' => true,
             ],
         ];
-        
-        $behaviors['authenticator'] = [
-           
+        // Autenticação via token
+        $behaviors['authenticator'] = [ 
             'class' => QueryParamAuth::class,
-            //only=> ['index'],  //Apenas para o GET
-            
         ];
-
+        // Controle de acesso
         $behaviors['access'] = [
             'class' => AccessControl::class,
             'rules' => [
                 [
                     'actions' => ['index', 'view'],
                     'allow' => true,
-                    'roles' => ['@'],
+                    'roles' => ['@'], // Apenas utilizadores autenticados
                 ],
                 [
                     'actions' => ['add'],
@@ -89,6 +86,11 @@ class AvaliacaoController extends ActiveController
         return $behaviors;
     } 
 
+    // ========================================
+    // Extra Patterns
+    // ========================================
+
+    // Adiciona uma nova avaliação
     public function actionAdd($localid)
     {
         $user = Yii::$app->user->identity;
@@ -111,6 +113,7 @@ class AvaliacaoController extends ActiveController
         }
     }
 
+    // Remove uma avaliação
     public function actionRemove($id){
         $user = Yii::$app->user;
         
