@@ -78,7 +78,7 @@ class FavoritoController extends ActiveController
             'class' => AccessControl::class,
             'rules' => [
                 [
-                    'actions' => ['index'],
+                    'actions' => ['index', 'view'],
                     'allow' => true,
                     'roles' => ['viewFavorites'],
                 ],
