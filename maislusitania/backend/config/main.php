@@ -12,6 +12,11 @@ return [
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
+    'on beforeRequest' => function ($event) {
+        if (strpos(Yii::$app->request->getPathInfo(), 'api/') === 0) {
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        }
+    },
     'modules' => [
         'api' => [
             'class' => 'backend\modules\api\ModuleAPI',
@@ -137,8 +142,9 @@ return [
                     'controller' => 'api/avaliacao',
                     'pluralize' => true,
                     'extraPatterns' => [
-                        'POST add/{localid}' => 'add', // Adiciona avaliação a um local
-                        'DELETE remove/{id}' => 'remove', // Remove avaliação pelo ID
+                        'POST add/{localid}' => 'add', // Adiciona uma avaliação a um local
+                        'PUT edit/{id}' => 'edit', // Edita uma avaliação existente
+                        'DELETE remove/{id}' => 'remove', // Remove uma avaliação existente
                     ],
                     'tokens' => [
                         '{id}' => '<id:\\d+>', // id numérico
