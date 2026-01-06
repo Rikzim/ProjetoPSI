@@ -62,17 +62,18 @@ class FavoritoController extends ActiveController
                 'Access-Control-Allow-Credentials' => true,
             ],
         ];
-        $behaviors['contentNegotiator'] = [ // Resposta em JSON
+        // Resposta em JSON
+        $behaviors['contentNegotiator'] = [
             'class' => ContentNegotiator::class,
             'formats' => [
                 'application/json' => Response::FORMAT_JSON,
             ],
         ];
-        
+        // Autenticação via token
         $behaviors['authenticator'] = [
             'class' => QueryParamAuth::class,
         ];
-
+        // Controle de acesso
         $behaviors['access'] = [
             'class' => AccessControl::class,
             'rules' => [
@@ -102,6 +103,7 @@ class FavoritoController extends ActiveController
         return $behaviors;
     }
 
+    // Lista todos os favoritos do utilizador autenticado
     public function actionIndex()
     {
         $user = Yii::$app->user->identity;
@@ -135,7 +137,11 @@ class FavoritoController extends ActiveController
 
         return $data;
     }
+    // ========================================
+    // Extra Patterns
+    // ========================================
 
+    // Adiciona um favorito
     public function actionAdd($localid)
     {
         $user = Yii::$app->user->identity;
@@ -156,6 +162,8 @@ class FavoritoController extends ActiveController
             return ['status' => 'error', 'errors' => $novoFavorito->errors];
         }
     }
+
+    // Remove um favorito
     public function actionRemove($localid)
     {
         $user = Yii::$app->user->identity;
@@ -173,6 +181,7 @@ class FavoritoController extends ActiveController
         }
     }
 
+    // Alterna o estado de favorito
     public function actionToggle($localid)
     {
         $user = Yii::$app->user->identity;

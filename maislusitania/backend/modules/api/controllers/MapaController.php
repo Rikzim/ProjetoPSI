@@ -3,12 +3,10 @@
 namespace backend\modules\api\controllers;
 
 use yii\rest\ActiveController;
-use yii\data\ActiveDataProvider;
 use yii\web\Response;
-use yii\web\NotFoundHttpException;
 use yii\filters\Cors;
-use common\models\LocalCultural;
-use common\models\TipoLocal;
+use yii\filters\ContentNegotiator;
+use yii\filters\AccessControl;
 use Yii;
 
 class MapaController extends ActiveController
@@ -19,7 +17,7 @@ class MapaController extends ActiveController
     public $modelClass = 'common\models\LocalCultural';
 
     // ========================================
-    // Configura data provider
+    // Configura actions
     // ========================================
     public function actions()
     {
@@ -28,12 +26,47 @@ class MapaController extends ActiveController
         unset($actions['index']); // Remover ação index padrão
         return $actions;
     }
+    // ========================================
+    // Controle de permissões
+    // ========================================
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        // CORS para todos os controllers
+        $behaviors['corsFilter'] = [
+            'class' => Cors::class,
+            'cors' => [
+                'Origin' => ['*'],
+                'Access-Control-Request-Method' => ['GET','POST','PUT','DELETE','OPTIONS'],
+                'Access-Control-Allow-Credentials' => true,
+            ],
+        ];
+        // Formato de resposta JSON
+        $behaviors['contentNegotiator'] = [
+            'class' => ContentNegotiator::class,
+            'formats' => [
+                'application/json' => Response::FORMAT_JSON,
+            ],
+        ];
+        // Controle de acesso
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'actions' => ['index', 'search'],
+                    'allow' => true,
+                    'roles' => ['?', '@'], // Apenas utilizadores autenticados e convidados
+                ],
+            ],
+        ];
+
+        return $behaviors;
+    }
 
     // Lista todos os locais e o seus tipos com a imagem
     public function actionIndex()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
         $modelClass = $this->modelClass;
         $locais = $modelClass::find()
             ->where(['ativo' => true])
@@ -61,10 +94,13 @@ class MapaController extends ActiveController
         return $data;
     }
 
+    // ========================================
+    // Extra Patterns
+    // ========================================
+
+    // Pesquisa locais culturais por nome ou tipo
     public function actionSearch($nome)
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
         $modelClass = $this->modelClass;
         $locais = $modelClass::find()
             ->joinWith('tipoLocal')

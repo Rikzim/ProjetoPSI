@@ -13,6 +13,8 @@ use yii\web\ForbiddenHttpException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
+use yii\web\Response;
+use yii\filters\ContentNegotiator;
 
 class UserProfileController extends ActiveController
 {
@@ -30,7 +32,6 @@ class UserProfileController extends ActiveController
         $actions['index']['prepareDataProvider'] = [$this, 'prepareDataProvider'];
         return $actions;
     }
-
     public function prepareDataProvider()
     {
         $modelClass = $this->modelClass;
@@ -41,6 +42,60 @@ class UserProfileController extends ActiveController
                 'pageSize' => 20, 
             ],
         ]);
+    }
+    // ========================================
+    // Controle de permissões
+    // ========================================
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        if (!is_array($behaviors)) {
+            $behaviors = [];
+        }
+        // CORS para todos os controllers
+        $behaviors['corsFilter'] = [
+            'class' => Cors::class,
+            'cors' => [
+                'Origin' => ['*'],
+                'Access-Control-Request-Method' => ['GET','POST','PUT','DELETE','OPTIONS'],
+                'Access-Control-Allow-Credentials' => true,
+            ],
+        ];
+        // Autenticação via token
+        $behaviors['authenticator'] = [
+            'class' => QueryParamAuth::class,
+        ];
+        // Resposta em JSON
+        $behaviors['contentNegotiator'] = [
+            'class' => ContentNegotiator::class,
+            'formats' => [
+                'application/json' => Response::FORMAT_JSON,
+            ],
+        ];
+        // Controle de acesso
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'actions' => ['me'],
+                    'allow' => true,
+                    'roles' => ['viewOwnProfile'],
+                ],
+                [
+                    'actions' => ['update', 'update-profile', 'change-password'],
+                    'allow' => true,
+                    'roles' => ['editOwnProfile'],
+                ],
+                [
+                    'actions' => ['delete-account'],
+                    'allow' => true,
+                    'roles' => ['deleteOwnProfile'],
+                ],
+            ],
+        ];
+
+        return $behaviors;
     }
 
     // ========================================
@@ -283,63 +338,4 @@ class UserProfileController extends ActiveController
             }
         }
     }
-
-
-    // ========================================
-    // Controle de permissões
-    // ========================================
-    public function behaviors()
-    {
-        $behaviors = parent::behaviors();
-
-        if (!is_array($behaviors)) {
-            $behaviors = [];
-        }
-
-        // CORS para todos os controllers
-        $behaviors['corsFilter'] = [
-            'class' => Cors::class,
-            'cors' => [
-                'Origin' => ['*'],
-                'Access-Control-Request-Method' => ['GET','POST','PUT','DELETE','OPTIONS'],
-                'Access-Control-Allow-Credentials' => true,
-            ],
-        ];
-        
-        $behaviors['authenticator'] = [
-           
-            'class' => QueryParamAuth::class,
-            //only=> ['index'],  //Apenas para o GET
-            
-        ];
-
-        $behaviors['access'] = [
-            'class' => AccessControl::class,
-            'rules' => [
-                // Permite a utilizadores autenticados aceder ao seu próprio perfil
-                [
-                    'actions' => ['me'],
-                    'allow' => true,
-                    'roles' => ['viewOwnProfile'],
-                ],
-                // Permite a utilizadores autenticados atualizarem o seu próprio perfil
-                [
-                    'actions' => ['update', 'update-profile', 'change-password'],
-                    'allow' => true,
-                    'roles' => ['editOwnProfile'],
-                ],
-                // Permite a utilizadores autenticados eliminarem a sua própria conta
-                [
-                    'actions' => ['delete-account'],
-                    'allow' => true,
-                    'roles' => ['deleteOwnProfile'],
-                ],
-            ],
-        ];
-
-        // retornar em json
-        $behaviors['contentNegotiator']['formats']['application/json'] = \yii\web\Response::FORMAT_JSON;
-
-        return $behaviors;
-    } 
 }
