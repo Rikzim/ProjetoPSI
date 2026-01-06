@@ -17,8 +17,6 @@ class DefaultController extends Controller
             'version' => '1.0.0',
             'status' => 'online',
             'endpoints' => [
-                '/api/distritos' => ' /distritos - Gestão de distritos',
-                '/api/users' => ' /users - Gestão de utilizadores',
                 '/api/avaliacaos' => ' /avaliacaos - Gestão de avaliações',
                 '/api/eventos' => ' /eventos - Gestão de eventos',
                 '/api/noticias' => ' /noticias - Gestão de notícias',
