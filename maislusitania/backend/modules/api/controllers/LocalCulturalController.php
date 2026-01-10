@@ -268,7 +268,7 @@ class LocalCulturalController extends ActiveController
             'avaliacoes' => $local->avaliacaos ? array_map(function($avaliacao) {
                 return [
                     'id' => $avaliacao->id,
-                    'utilizador' => $avaliacao->user->username ?? 'Anônimo',
+                    'utilizador' => $avaliacao->utilizador->username ?? 'Anónimo',
                     'classificacao' => (float)$avaliacao->classificacao,
                     'comentario' => $avaliacao->comentario,
                     'data_avaliacao' => date('Y-m-d', strtotime($avaliacao->data_avaliacao)),
