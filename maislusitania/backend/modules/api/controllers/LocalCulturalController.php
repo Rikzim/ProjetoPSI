@@ -357,6 +357,7 @@ class LocalCulturalController extends ActiveController
         $data = [
             'id' => $local->id,
             'nome' => $local->nome,
+            'avaliacao_media' => $local->getAverageRating(),
             'tipo' => $local->tipoLocal->nome ?? null,
             'distrito' => $local->distrito->nome ?? null,
             'imagem' => $local->getImageAPI(),
