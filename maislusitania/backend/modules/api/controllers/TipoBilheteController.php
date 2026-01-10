@@ -27,8 +27,16 @@ class TipoBilheteController extends ActiveController
     {
         $modelClass = $this->modelClass;
         
+        $query = $modelClass::find()->orderBy(['id' => SORT_DESC]);
+
+        // Filter by local_id if provided in the URL
+        $local_id = \Yii::$app->request->get('local_id');
+        if ($local_id) {
+            $query->andWhere(['local_id' => $local_id]);
+        }
+
         return new ActiveDataProvider([
-            'query' => $modelClass::find()->orderBy(['id' => SORT_DESC]), 
+            'query' => $query, 
             'pagination' => [
                 'pageSize' => 20, 
             ],
