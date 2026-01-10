@@ -55,6 +55,11 @@ return [
             'showScriptName' => false,
             'rules' => [
                 [
+                    'pattern' => 'api/<local_id:\d+>/tipo-bilhete',
+                    'route' => 'api/tipo-bilhete/index',
+                    'defaults' => ['local_id' => null],
+                ],
+                [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'api/local-cultural', 
                     'pluralize' => true,
