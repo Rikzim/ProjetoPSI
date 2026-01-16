@@ -41,14 +41,14 @@ class LoginFormController extends Controller
         // Procura o utilizador
         $user = User::findOne(['username' => $username]);
 
-        if($user->status != User::STATUS_ACTIVE) {
-            Yii::$app->response->statusCode = 403;
-            return ['status' => 'error', 'message' => 'Utilizador inativo'];
-        }
-
         if (!$user) {
             Yii::$app->response->statusCode = 404;
             return ['status' => 'error', 'message' => 'Utilizador não encontrado'];
+        }
+
+        if($user->status != User::STATUS_ACTIVE) {
+            Yii::$app->response->statusCode = 403;
+            return ['status' => 'error', 'message' => 'Utilizador inativo'];
         }
 
         // Compara os hashes diretamente
