@@ -5,6 +5,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js', ['position' => \y
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 $this->title = 'Dashboard';
 $this->params['breadcrumbs'] = [['label' => $this->title]];
@@ -54,7 +55,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-calendar-check"></i> Últimas Reservas</h3>
                     <div class="card-tools">
-                        <a href="reserva/index" class="btn btn-tool btn-sm">
+                        <a href="<?= Url::to(['reserva/index']) ?>" class="btn btn-tool btn-sm">
                             <i class="fas fa-eye"></i> Ver Todas
                         </a>
                     </div>
@@ -103,7 +104,7 @@ $this->params['breadcrumbs'] = [['label' => $this->title]];
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-star"></i> Últimas Avaliações</h3>
                     <div class="card-tools">
-                        <a href="avaliacao/index" class="btn btn-tool btn-sm">
+                        <a href="<?= Url::to(['avaliacao/index']) ?>" class="btn btn-tool btn-sm">
                             <i class="fas fa-eye"></i> Ver Todas
                         </a>
                     </div>
