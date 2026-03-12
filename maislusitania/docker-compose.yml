@@ -57,6 +57,7 @@ services:
       - MYSQL_PASSWORD=secret
     volumes:
       - maislusitania-db-data:/var/lib/mysql
+      - ../yii2advanced.sql:/docker-entrypoint-initdb.d/yii2advanced.sql
     networks:
       - maislusitania-network
 
