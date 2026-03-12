@@ -2,7 +2,7 @@ DOCKER_COMPOSE = docker compose
 
 .PHONY: help build up down restart ps \
         logs logs-app logs-admin logs-api logs-db \
-        composer init migrate wait-db setup \
+        composer init migrate wait-db permissions setup \
         shell-app shell-admin shell-api shell-db \
         clean
 
@@ -63,13 +63,27 @@ composer: ## Install Composer dependencies (runs inside maislusitania-admin)
 
 init: ## Run Yii2 init script for Development environment
 	$(DOCKER_COMPOSE) exec maislusitania-admin php /app/init --env=Development --overwrite=n
+	$(DOCKER_COMPOSE) exec maislusitania-admin sed -i \
+		-e 's|mysql:host=localhost|mysql:host=maislusitania-db|g' \
+		-e "s|'username' => 'root'|'username' => 'yii2advanced'|g" \
+		-e "s|'password' => ''|'password' => 'secret'|g" \
+		/app/common/config/main-local.php
 
 migrate: ## Run all pending database migrations
 	$(DOCKER_COMPOSE) exec maislusitania-admin php /app/yii migrate --interactive=0
 
+permissions: ## Fix write permissions on uploads, assets and runtime directories
+	$(DOCKER_COMPOSE) exec maislusitania-admin chmod -R 777 \
+		/app/frontend/web/uploads \
+		/app/frontend/web/assets \
+		/app/frontend/runtime \
+		/app/backend/web/assets \
+		/app/backend/runtime \
+		/app/console/runtime
+
 wait-db: ## Wait until MySQL is ready to accept connections
 	@printf "Waiting for MySQL"
-	@until $(DOCKER_COMPOSE) exec maislusitania-db mysqladmin ping -uroot -pverysecret --silent 2>/dev/null; do \
+	@until $(DOCKER_COMPOSE) exec maislusitania-admin php -r "try { new PDO('mysql:host=maislusitania-db;dbname=yii2advanced', 'yii2advanced', 'secret'); exit(0); } catch(Exception) { exit(1); }" 2>/dev/null; do \
 		printf '.'; \
 		sleep 2; \
 	done
@@ -79,13 +93,14 @@ wait-db: ## Wait until MySQL is ready to accept connections
 # First-time full setup  →  make setup
 # ─────────────────────────────────────────────────────────────────────────────
 
-setup: ## Full first-time setup: build → up → wait-db → composer → init → migrate
+setup: ## Full first-time setup: build → up → wait-db → composer → init → migrate → permissions
 	@$(MAKE) build
 	@$(MAKE) up
 	@$(MAKE) wait-db
 	@$(MAKE) composer
 	@$(MAKE) init
 	@$(MAKE) migrate
+	@$(MAKE) permissions
 	@printf "\n\033[32m✔ Setup complete!\033[0m\n"
 	@printf "  Frontoffice  →  http://localhost:8080\n"
 	@printf "  Backoffice   →  http://localhost:8081\n"

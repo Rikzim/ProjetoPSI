@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   maislusitania-app:
     build: frontend
@@ -49,6 +47,7 @@ services:
   maislusitania-db:
     image: mysql:5.7
     container_name: maislusitania-db
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       - "3306:3306"
     environment:
