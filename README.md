@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="maislusitania/frontend/web/images/logo/logo.svg" alt="Mais Lusitânia Logo" width="300" style="background-color:white; padding:10px; vertical-align: middle;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker Logo" width="100" style="vertical-align: middle;">
+</div>
+
 # +Lusitânia — Guia de Instalação com Docker
 
 Plataforma de turismo cultural lusitano desenvolvida em **Yii2 Advanced Template**, containerizada com **Docker**.
@@ -8,10 +14,9 @@ Plataforma de turismo cultural lusitano desenvolvida em **Yii2 Advanced Template
 
 - [Pré-requisitos](#pré-requisitos)
 - [Estrutura dos Serviços](#estrutura-dos-serviços)
-- [Configuração Inicial](#configuração-inicial)
-- [Passo Crítico — Base de Dados](#passo-crítico--base-de-dados)
 - [Iniciar o Projeto](#iniciar-o-projeto)
 - [Aceder à Aplicação](#aceder-à-aplicação)
+- [Credenciais](#credenciais)
 - [Comandos Disponíveis](#comandos-disponíveis)
 - [Estrutura de Pastas](#estrutura-de-pastas)
 - [Notas Importantes](#notas-importantes)
@@ -49,72 +54,22 @@ Todos os contentores comunicam entre si numa rede interna Docker chamada `maislu
 
 ---
 
-## Configuração Inicial
-
-### 1. Clonar o repositório
-
-```bash
-git clone <url-do-repositorio>
-cd maislusitania
-```
-
-### 2. Criar a pasta de cache do Composer (apenas uma vez)
-
-O Docker reutiliza a cache local do Composer para acelerar instalações futuras:
-
-```bash
-mkdir -p ~/.composer-docker/cache
-```
-
----
-
-## Passo Crítico — Base de Dados
-
-> ⚠️ **Este passo é obrigatório.** Sem ele a aplicação não consegue ligar à base de dados.
-
-Depois de correr o `make init` (incluído no `make setup`), o ficheiro  
-`common/config/main-local.php` é criado automaticamente pelo Yii2.  
-Por defeito, esse ficheiro aponta para `localhost`, o que **não funciona dentro do Docker**.
-
-Tens de abrir o ficheiro e alterar o host:
-
-**Ficheiro:** `common/config/main-local.php`
-
-Encontra esta linha:
-```php
-'dsn' => 'mysql:host=localhost;dbname=yii2advanced',
-```
-
-Substitui por:
-```php
-'dsn' => 'mysql:host=maislusitania-db;dbname=yii2advanced',
-```
-
-Dentro do Docker, os contentores comunicam pelo **nome do serviço**, não por `localhost`.  
-O nome do serviço da base de dados é `maislusitania-db`.
-
-> 💡 Se correres `make setup` pela primeira vez, o setup vai pausar nas migrações porque este ficheiro ainda não existe. Segue a ordem: `make build` → `make up` → `make init` → **edita o ficheiro** → `make migrate`.
-
----
-
 ## Iniciar o Projeto
 
 ### Primeira vez (setup completo)
 
 ```bash
-make setup
+git clone <url-do-repositorio>
+cd maislusitania
+
+# O Docker reutiliza a cache local do Composer, por isso criamos a pasta primeiro
+mkdir -p ~/.composer-docker/cache
+
+# Comando mágico que faz tudo
+sudo make setup
 ```
 
-Este comando executa automaticamente e por ordem:
-
-1. `make build` — constrói as imagens Docker
-2. `make up` — inicia todos os contentores em segundo plano
-3. `make wait-db` — aguarda que o MySQL esteja pronto
-4. `make composer` — instala as dependências PHP via Composer
-5. `make init` — inicializa o ambiente Yii2 (Development)
-6. `make migrate` — corre todas as migrações da base de dados
-
-> ⚠️ **Lembra-te de editar o `common/config/main-local.php`** conforme descrito acima antes de correr `make migrate`, caso o faças separadamente.
+O comando `make setup` executa automaticamente tudo o que é necessário (build das imagens, iniciar contentores, instalar dependências, preparar a base de dados e aplicar permissões). Não é preciso fazer mais nada!
 
 No final do setup bem-sucedido verás:
 
@@ -130,16 +85,16 @@ No final do setup bem-sucedido verás:
 
 ### Utilizações seguintes
 
-Depois do setup inicial, para iniciar o projeto basta:
+Depois do setup inicial, para iniciar o projeto no dia a dia basta:
 
 ```bash
-make up
+sudo make up
 ```
 
 Para parar tudo:
 
 ```bash
-make down
+sudo make down
 ```
 
 ---
@@ -153,7 +108,19 @@ make down
 | API REST | http://localhost:8082/api/ | Endpoints REST da aplicação |
 | phpMyAdmin | http://localhost:8083 | Gestão visual da base de dados |
 
-### Credenciais da Base de Dados
+---
+
+## Credenciais
+
+### Aplicação
+
+| Perfil | Username | Password |
+|---|---|---|
+| **Administrador** | `admin` | `12345678` |
+| **Gestor** | `gestor` | `12345678` |
+| **Utilizador** | `user` | `12345678` |
+
+### Base de Dados (phpMyAdmin / Aplicação)
 
 | Campo | Valor |
 |---|---|
@@ -197,6 +164,7 @@ Corre `make help` para ver todos os comandos disponíveis com descrição.
 | `make composer` | Instala dependências Composer dentro do contentor |
 | `make init` | Inicializa o ambiente Yii2 (Development) |
 | `make migrate` | Corre as migrações pendentes da base de dados |
+| `make permissions`| Aplica as permissões de escrita corretas nas pastas (`uploads`, `assets`, etc) |
 | `make wait-db` | Aguarda o MySQL estar pronto para aceitar ligações |
 | `make setup` | Setup completo de primeira execução |
 
@@ -235,7 +203,7 @@ maislusitania/
 ├── common/
 │   ├── config/
 │   │   ├── main.php
-│   │   ├── main-local.php     # ⚠️ Criado pelo init — editar o host da DB
+│   │   ├── main-local.php     # Criado pelo init (já com o host correto via Makefile)
 │   │   └── bootstrap.php      # Define @uploadPath
 │   └── models/
 ├── console/
@@ -275,6 +243,8 @@ Os dados do MySQL são guardados num volume Docker chamado `maislusitania-db-dat
 Isto significa que os dados **sobrevivem** a um `make down` e `make up`.  
 Só são apagados se correres `make clean`.
 
+A base de dados é populada automaticamente na primeira vez que o contentor é iniciado, através do ficheiro `yii2advanced.sql`.
+
 ### Composer Cache
 
 A pasta `~/.composer-docker/cache` no teu computador é partilhada com os contentores  
@@ -282,19 +252,9 @@ para evitar re-descarregar pacotes em cada rebuild. É criada automaticamente no
 
 ### Problemas Comuns
 
-**Erro de ligação à base de dados:**  
-Verifica se o `common/config/main-local.php` tem `host=maislusitania-db` e não `host=localhost`.
-
 **Porta já em uso:**  
 Se as portas 8080, 8081, 8082, 8083 ou 3306 já estiverem a ser usadas no teu sistema,  
 altera os valores no lado esquerdo do `docker-compose.yml` (ex: `"9080:80"`).
-
-**Permissões na pasta uploads:**  
-Se os uploads falharem por questões de permissões, corre dentro do contentor:
-```bash
-make shell-admin
-chmod -R 777 /app/frontend/web/uploads
-```
 
 **Composer falha com erro de versão PHP:**  
 Corre dentro do contentor:
