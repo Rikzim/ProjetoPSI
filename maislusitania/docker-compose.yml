@@ -1,38 +1,84 @@
-version: '3.2'
+version: "3.8"
 
 services:
-
-  frontend:
+  maislusitania-app:
     build: frontend
+    container_name: maislusitania-app
     ports:
-      - 20080:80
+      - "8080:80"
     volumes:
       # Re-use local composer cache via host-volume
       - ~/.composer-docker/cache:/root/.composer/cache:delegated
       # Mount source-code for development
       - ./:/app
+    depends_on:
+      - maislusitania-db
+    networks:
+      - maislusitania-network
 
-  backend:
+  maislusitania-admin:
     build: backend
+    container_name: maislusitania-admin
     ports:
-      - 21080:80
+      - "8081:80"
     volumes:
       # Re-use local composer cache via host-volume
       - ~/.composer-docker/cache:/root/.composer/cache:delegated
       # Mount source-code for development
       - ./:/app
+    depends_on:
+      - maislusitania-db
+    networks:
+      - maislusitania-network
 
-  mysql:
+  maislusitania-api:
+    build: backend
+    container_name: maislusitania-api
+    ports:
+      - "8082:80"
+    volumes:
+      # Re-use local composer cache via host-volume
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      # Mount source-code for development
+      - ./:/app
+    depends_on:
+      - maislusitania-db
+    networks:
+      - maislusitania-network
+
+  maislusitania-db:
     image: mysql:5.7
+    container_name: maislusitania-db
+    ports:
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=verysecret
       - MYSQL_DATABASE=yii2advanced
       - MYSQL_USER=yii2advanced
       - MYSQL_PASSWORD=secret
+    volumes:
+      - maislusitania-db-data:/var/lib/mysql
+    networks:
+      - maislusitania-network
 
-  #pgsql:
-  #  image: postgres:9.5
-  #  environment:
-  #    - POSTGRES_DB=yii2advanced
-  #    - POSTGRES_USER=yii2advanced
-  #    - POSTGRES_PASSWORD=secret
+  maislusitania-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: maislusitania-phpmyadmin
+    ports:
+      - "8083:80"
+    environment:
+      - PMA_HOST=maislusitania-db
+      - PMA_USER=root
+      - PMA_PASSWORD=verysecret
+    depends_on:
+      - maislusitania-db
+    networks:
+      - maislusitania-network
+
+volumes:
+  maislusitania-db-data:
+    driver: local
+
+networks:
+  maislusitania-network:
+    driver: bridge
