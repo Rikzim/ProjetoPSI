@@ -24,7 +24,6 @@ services:
     env: image
     image:
       url: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password
     plan: starter
     disk:
       name: mysql-data
