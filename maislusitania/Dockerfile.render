@@ -1,0 +1,57 @@
+FROM yiisoftware/yii2-php:8.4-apache
+
+# Install required system packages
+RUN apt-get update && apt-get install -y \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip pdo pdo_mysql
+
+# Copy application files
+WORKDIR /app
+COPY . /app
+
+# Install composer dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Setup Apache VirtualHosts for Frontend and Backend
+# We will serve frontend on root (/) and backend on /admin
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /app/frontend/web\n\
+    Alias /admin /app/backend/web\n\
+    \n\
+    <Directory /app/frontend/web>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    \n\
+    <Directory /app/backend/web>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+# Add /uploads alias so backend and API can serve images stored in frontend/web/uploads natively
+RUN echo 'Alias /uploads /app/frontend/web/uploads\n\
+<Directory /app/frontend/web/uploads>\n\
+    Require all granted\n\
+</Directory>' > /etc/apache2/conf-available/uploads.conf
+
+RUN a2enmod alias rewrite && a2enconf uploads
+
+# Ensure uploads and runtime directories are writable
+RUN mkdir -p /app/frontend/web/uploads \
+    /app/frontend/runtime \
+    /app/backend/runtime \
+    /app/console/runtime \
+    && chown -R www-data:www-data /app/frontend/web/uploads \
+    /app/frontend/runtime \
+    /app/backend/runtime \
+    /app/console/runtime
+
+# Copy custom entrypoint
+COPY render-start.sh /usr/local/bin/render-start.sh
+RUN chmod +x /usr/local/bin/render-start.sh
+
+CMD ["/usr/local/bin/render-start.sh"]
